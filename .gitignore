@@ -1,0 +1,26 @@
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
+
+# Python / uv
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Paper: fetched by scripts/fetch_paper.sh, not redistributed (public repo)
+docs/paper/*.pdf
+docs/paper/latex_src/
+
+# Large artifacts: embeddings, checkpoints, run dirs, caches. Never commit.
+outputs/
+wandb/
+*.npz
+*.pth
+*.safetensors
+
+# SLURM logs
+slurm-*.out

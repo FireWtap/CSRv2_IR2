@@ -1,0 +1,3 @@
+# Append-only ledger files: concurrent appends from different branches merge without conflicts.
+ledger/log.md merge=union
+ledger/decisions.md merge=union

@@ -1,0 +1,3 @@
+[submodule "third_party/CSRv2"]
+	path = third_party/CSRv2
+	url = https://github.com/Y-Research-SBU/CSRv2.git

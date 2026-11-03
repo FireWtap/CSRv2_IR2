@@ -1,0 +1,17 @@
+#!/bin/bash
+# Copy this file, rename it after the experiment id (e.g. E1_mrl_eval.job), edit the command.
+# Submit from the repo root:  sbatch jobs/snellius/<name>.job
+#SBATCH --job-name=csrv2
+#SBATCH --partition=gpu_a100
+#SBATCH --gpus-per-node=1
+#SBATCH --cpus-per-task=18
+#SBATCH --time=04:00:00
+#SBATCH --output=outputs/slurm/%x-%j.out
+
+set -euo pipefail
+cd "$SLURM_SUBMIT_DIR"
+source jobs/snellius/env.sh
+echo "commit $(git rev-parse --short HEAD) | upstream $(git -C third_party/CSRv2 rev-parse --short HEAD) | node $(hostname)"
+
+uv run --frozen python -c "import torch; print(torch.cuda.get_device_name(0))"
+# uv run --frozen python -m csrv2_repro.<module> --config configs/<exp>.yaml
