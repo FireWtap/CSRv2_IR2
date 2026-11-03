@@ -1,0 +1,13 @@
+# E2: MRL baseline = E1 (query-prompt protocol) embeddings truncated to the first k dims (Table 3, MRL column).
+# dtype: none on purpose (ledger D-005). Pass the same --dtype as E1; run_name gets a _fp32/_bf16 suffix.
+exp_id = "E2"
+run_name = "qwen3_4b_mrl_prompt_query"
+dense_config = "configs/E1_dense_query.toml"
+ks = [2, 4, 16, 64, 2560]   # 2560 = full embedding: must equal the E1 score (sanity check)
+
+[paper_target_mean_by_k]    # Table 3, MRL, 8-task retrieval mean
+2 = 5.23
+4 = 6.59
+16 = 20.40
+64 = 44.13
+2560 = 58.31

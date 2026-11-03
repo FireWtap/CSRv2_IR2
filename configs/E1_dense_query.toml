@@ -4,7 +4,7 @@ exp_id = "E1"
 run_name = "qwen3_4b_dense_prompt_query"
 model = "Qwen/Qwen3-Embedding-4B"
 revision = "5cf2132abc99cad020ac570b19d031efec650f2b"
-dtype = "float32"          # PENDING D-005 (E1p): do not submit E1 before it is decided
+# dtype: none on purpose (ledger D-005). Pass --dtype at run time; run_name gets a _fp32/_bf16 suffix.
 max_seq_length = 512       # matches the released CSRv2-retrieval sentence_bert_config.json
 batch_size = 16
 prompt_mode = "query"

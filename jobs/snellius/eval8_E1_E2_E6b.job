@@ -1,0 +1,31 @@
+#!/bin/bash
+# 8-task evaluations that need no training: E1 dense (both prompt protocols), E2 MRL, E6b released ckpt.
+# The dtype is NOT fixed until ledger D-005 is decided, so it must be passed at submit time:
+#   sbatch --export=ALL,DTYPE=bfloat16 jobs/snellius/eval8_E1_E2_E6b.job
+#   sbatch --export=ALL,DTYPE=float32 --time=48:00:00 jobs/snellius/eval8_E1_E2_E6b.job
+# Time: 3 backbone passes over ~240k docs. 12 h is a guess for bf16 (not measured); fp32 is several
+# times slower. Resumable: embedding caches and finished mteb tasks are reused on resubmission.
+#SBATCH --job-name=eval8
+#SBATCH --partition=gpu_a100
+#SBATCH --gpus-per-node=1
+#SBATCH --cpus-per-task=18
+#SBATCH --time=12:00:00
+#SBATCH --output=outputs/slurm/%x-%j.out
+
+set -euo pipefail
+: "${DTYPE:?DTYPE not set: sbatch --export=ALL,DTYPE=bfloat16|float32 (see ledger D-005)}"
+case "$DTYPE" in float32|bfloat16) ;; *) echo "DTYPE must be float32 or bfloat16" >&2; exit 2;; esac
+cd "$SLURM_SUBMIT_DIR"
+source jobs/snellius/env.sh
+echo "commit $(git rev-parse --short HEAD) | upstream $(git -C third_party/CSRv2 rev-parse --short HEAD) | node $(hostname) | dtype $DTYPE"
+nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
+
+run() { echo "=== $* ($(date +%T))"; uv run --frozen python -m "$@" --dtype "$DTYPE"; }
+# Most informative first, in case of a timeout. E2 reuses E1's embedding cache (same dtype), so each E2
+# costs no backbone pass; E1 query-only (D-004 protocol variant) runs last.
+run csrv2_repro.e1_dense_backbone --config configs/E1_dense_both.toml
+run csrv2_repro.e2_mrl --config configs/E2_mrl_both.toml
+run csrv2_repro.e0_released_ckpt --config configs/E6b_released_ckpt.toml
+run csrv2_repro.e1_dense_backbone --config configs/E1_dense_query.toml
+run csrv2_repro.e2_mrl --config configs/E2_mrl_query.toml
+echo "=== done ($(date +%T))"

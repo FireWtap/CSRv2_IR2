@@ -8,13 +8,13 @@ k grid: {2, 4, 16, 64, 2560} (Table 3); ablation adds {8, 32}. Each experiment i
 |-----|----------------------------------------------------------------------|------------------|------------|---------|
 | E0  | Released `CSRv2-retrieval` ckpt on NFCorpus+SciFact, all k, fp32+bf16; upstream path == cached path check | Tab.3 (per-task n/a) | env | ready (job E1p_precision) |
 | E1p | Precision check bf16 vs fp32: dense Qwen3-4B + E0 ckpt on NFCorpus+SciFact -> results/E1p/precision_report.json | D-005 | env | ready (job E1p_precision) |
-| E1  | Dense backbone, 8 tasks, prompt protocol both + query, cache embeddings | Tab.3 row 1      | E1p (dtype) | blocked on D-005 |
-| E2  | MRL: truncate cached E1 embeddings to k                               | Tab.3 MRL        | E1         | todo    |
+| E1  | Dense backbone, 8 tasks, prompt protocol both + query, cache embeddings | Tab.3 row 1      | E1p (dtype) | ready (job eval8, needs DTYPE from D-005) |
+| E2  | MRL: truncate cached E1 embeddings to k                               | Tab.3 MRL        | E1         | ready (job eval8) |
 | E3  | Training embeddings: Qwen3-4B on retrieval train splits (replaces broken upstream `get_embeddings_of_each_dataset.py`) | App. B | env | todo |
 | E4  | CSR (no anneal, unsupervised CL) on E3, eval on cached E1            | Tab.3 CSR        | E1, E3     | todo    |
 | E5  | CSRv2-linear (anneal + SpSCL) on E3                                   | Tab.3 CSRv2-lin  | E1, E3     | todo    |
 | E6  | CSRv2: TopK-LoRA backbone finetune, re-embed, train SAE, eval         | Tab.3 CSRv2      | E3         | todo    |
-| E6b | Released `CSRv2-retrieval` ckpt, all 8 tasks x all k                  | Tab.3 CSRv2      | E0         | todo    |
+| E6b | Released `CSRv2-retrieval` ckpt, all 8 tasks x all k                  | Tab.3 CSRv2      | E0         | ready (job eval8) |
 | E7  | Retrieval time, 1M-doc DB, relative to CSRv2@k=2                       | Tab.2 time col   | E2, E5/E6  | todo    |
 | E8  | Ablation: CSR, +anneal, +supervise, CSRv2-linear, CSRv2 x k grid      | Tab.4 (ported)   | E4-E6      | optional|
 

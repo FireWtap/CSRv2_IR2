@@ -83,6 +83,55 @@ def collect_ndcg10(mteb_output_dir: Path, tasks: list[str]) -> dict[str, float |
     return scores
 
 
+DTYPE_TAGS = {"float32": "fp32", "bfloat16": "bf16"}
+
+
+def resolve_dtype(cfg: dict, override: str | None) -> dict:
+    """Set cfg["dtype"] from the config or the --dtype CLI flag (ledger D-005).
+
+    Configs that leave dtype out (the 8-task runs, pending D-005) must get it from --dtype, and their
+    run_name gets a _fp32/_bf16 suffix so results and embedding caches of different dtypes never mix.
+    A config that pins dtype cannot be overridden (its run_name already names the dtype).
+    """
+    cfg = dict(cfg)
+    if "dtype" in cfg:
+        if override and override != cfg["dtype"]:
+            raise ValueError(f"config pins dtype={cfg['dtype']}, refusing --dtype {override}")
+        return cfg
+    if not override:
+        raise ValueError("this config has no dtype (pending ledger D-005): pass --dtype float32|bfloat16")
+    if override not in DTYPE_TAGS:
+        raise ValueError(f"--dtype must be one of {list(DTYPE_TAGS)}")
+    cfg["dtype"] = override
+    cfg["run_name"] = f"{cfg['run_name']}_{DTYPE_TAGS[override]}"
+    return cfg
+
+
+def run_mteb(model, tasks: list[str], out: Path, overwrite: bool, encode_kwargs: dict) -> dict:
+    """mteb.MTEB.run on the test split, saving per-query rankings (top 100) for paired tests.
+
+    top_k=100 truncates the run before mteb scores it: metrics @<=100 are exact, @1000 are not.
+    Finished tasks are skipped on rerun (resumable jobs) unless overwrite.
+    """
+    import shutil
+
+    import mteb
+
+    if overwrite and out.exists():
+        shutil.rmtree(out)
+    mteb.MTEB(tasks=mteb.get_tasks(tasks=tasks, languages=["eng"])).run(
+        model,
+        eval_splits=["test"],
+        output_folder=str(out),
+        show_progress_bar=True,
+        encode_kwargs=encode_kwargs,
+        save_predictions=True,
+        top_k=100,
+    )
+    scores = collect_ndcg10(out, tasks)
+    return {"per_task": scores, "mean": mean_or_none(scores.values())}
+
+
 def mean_or_none(values) -> float | None:
     values = list(values)
     if not values or any(v is None for v in values):

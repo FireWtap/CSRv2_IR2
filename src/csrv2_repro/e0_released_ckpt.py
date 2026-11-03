@@ -8,6 +8,7 @@ plain mteb.MTEB.run):
 For every k in faithful_ks both paths run, and the summary reports their difference (should be ~0).
 
     uv run python -m csrv2_repro.e0_released_ckpt --config configs/E0_released_ckpt.toml
+    uv run python -m csrv2_repro.e0_released_ckpt --config configs/E6b_released_ckpt.toml --dtype bfloat16
 """
 
 from __future__ import annotations
@@ -15,7 +16,6 @@ from __future__ import annotations
 import argparse
 import logging
 import os
-import shutil
 from pathlib import Path
 
 import torch
@@ -23,33 +23,15 @@ import torch
 from csrv2_repro.common import (
     OUTPUTS,
     RESULTS,
-    collect_ndcg10,
+    RETRIEVAL_TASKS,
     load_config,
-    mean_or_none,
     provenance,
+    resolve_dtype,
+    run_mteb,
     upstream_prompts,
     write_json,
 )
 from csrv2_repro.encoders import CachedEncoder, sae_topk_transform
-
-
-def run_mteb(model, tasks: list[str], out: Path, overwrite: bool, encode_kwargs: dict) -> dict:
-    import mteb
-
-    if overwrite and out.exists():
-        shutil.rmtree(out)
-    mteb.MTEB(tasks=mteb.get_tasks(tasks=tasks, languages=["eng"])).run(
-        model,
-        eval_splits=["test"],
-        output_folder=str(out),
-        show_progress_bar=True,
-        encode_kwargs=encode_kwargs,
-        # Per-query rankings for paired tests (csrv2_repro.paired); @1000 metrics are truncated to top 100.
-        save_predictions=True,
-        top_k=100,
-    )
-    scores = collect_ndcg10(out, tasks)
-    return {"per_task": scores, "mean": mean_or_none(scores.values())}
 
 
 def main() -> None:
@@ -57,6 +39,7 @@ def main() -> None:
         description=__doc__, formatter_class=argparse.RawTextHelpFormatter
     )
     parser.add_argument("--config", required=True)
+    parser.add_argument("--dtype", help="float32|bfloat16, for configs without dtype (D-005)")
     parser.add_argument("--tasks", nargs="+", help="override the task list (debugging)")
     parser.add_argument("--ks", nargs="+", type=int, help="override the k list (debugging)")
     parser.add_argument(
@@ -67,11 +50,11 @@ def main() -> None:
         level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s"
     )
 
-    cfg = load_config(args.config)
-    tasks = args.tasks or cfg["tasks"]
+    cfg = resolve_dtype(load_config(args.config), args.dtype)
+    tasks = args.tasks or cfg.get("tasks", RETRIEVAL_TASKS)
     ks = args.ks or cfg["ks"]
     faithful_ks = [k for k in cfg.get("faithful_ks", []) if k in ks]
-    dtype = cfg.get("dtype", "float32")
+    dtype = cfg["dtype"]
     batch_size = cfg.get("batch_size", 2)
     out_dir = RESULTS / cfg["exp_id"] / cfg["run_name"]
     cache_root = Path(os.environ.get("SCRATCH_ROOT", OUTPUTS)) / "emb_cache"
