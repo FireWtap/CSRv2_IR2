@@ -5,3 +5,4 @@ A claim older than 48h without a log entry is stale: ask its owner before taking
 
 | Since (UTC date) | Owner (person/agent) | Exp/area | Paths touched | Branch |
 |------------------|----------------------|----------|---------------|--------|
+| 2026-11-03 | francesco/claude | E0, E1 | src/csrv2_repro/, configs/E0_*, configs/E1_*, jobs/snellius/E0_*, jobs/snellius/E1_* | francesco/E0-E1-eval |

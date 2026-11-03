@@ -19,3 +19,15 @@ pins copied from upstream requirements.txt for the packages the text pipeline im
 Paper Table 7 lists epoch=128, batch=256 for Qwen3-4B (e5: epoch=10, batch=128). 128 epochs is
 suspicious. Default to the upstream script defaults/README command until checked against the released
 ckpt's trainer_state.json. Status: open — resolve before E4/E5.
+
+## D-004 (2026-11-03, francesco) Eval protocol details for Qwen3-4B
+Follow upstream eval_all(): instruction prompts from upstream MTEB_task_prompts.json, left padding, max_seq_length 512,
+cosine similarity, mteb 1.38.39 test split. Upstream applies the task instruction to queries AND documents
+(model.prompts keyed by task name); Qwen3 recommends queries only. E1 runs both protocols to find which one
+reproduces 58.37; the winner becomes the protocol for all later experiments. Batch size 16 instead of upstream's 2
+(padding only; invariant for RoPE + last-token pooling). Status: active (protocol choice pending E1).
+
+## D-005 (2026-11-03, francesco) Inference precision: fp32 (upstream) vs bf16
+Upstream inference is fp32 by default. fp32 E1 costs ~7-10 A100-h per protocol; bf16 ~1h. Before any full run,
+E1p measures the bf16-fp32 gap on NFCorpus+SciFact for (a) dense Qwen3-4B nDCG@10 and (b) the released CSRv2
+ckpt nDCG@10 and TopK active-set agreement at k in {2,4,16,64,2560}. Status: open — decide after E1p.

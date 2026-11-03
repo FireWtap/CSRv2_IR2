@@ -1,0 +1,19 @@
+# E0: released Y-Research-Group/CSRv2-retrieval checkpoint, upstream protocol, fp32 (upstream default).
+# Also the fp32 half of the sparse precision check (D-005). The paper reports only the 8-task mean,
+# so these 2-task numbers have no direct target; E6b runs all 8 tasks against Table 3.
+exp_id = "E0"
+run_name = "released_ckpt_fp32"
+model = "Y-Research-Group/CSRv2-retrieval"
+revision = "af16198ddd83dec2d747756a1fb592378c15c4ac"
+dtype = "float32"          # upstream loads without torch_dtype -> fp32
+batch_size = 16            # upstream uses 2; only affects padding, see ledger D-004
+tasks = ["NFCorpus", "SciFact"]
+ks = [2, 4, 16, 64, 2560]
+faithful_ks = [2]          # also run the exact upstream SparseEncoder path here; must equal the cached path
+
+[paper_target_mean_by_k]   # Table 3, CSRv2, 8-task retrieval mean (not comparable to a 2-task mean)
+2 = 23.93
+4 = 29.71
+16 = 45.09
+64 = 55.64
+2560 = 58.23

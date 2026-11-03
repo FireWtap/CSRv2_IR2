@@ -1,0 +1,10 @@
+# E1p: precision check (ledger D-005), dense Qwen3-4B on the two smallest retrieval tasks, bf16.
+exp_id = "E1p"
+run_name = "qwen3_4b_dense_bf16"
+model = "Qwen/Qwen3-Embedding-4B"
+revision = "5cf2132abc99cad020ac570b19d031efec650f2b"
+dtype = "bfloat16"
+max_seq_length = 512
+batch_size = 16
+prompt_mode = "both"
+tasks = ["NFCorpus", "SciFact"]

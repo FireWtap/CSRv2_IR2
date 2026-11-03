@@ -50,8 +50,8 @@ AGENTS.md / CLAUDE.md     this guide (CLAUDE.md just imports it)
 ledger/                   claims, log, decisions
 docs/reproduction/        targets.md (paper numbers), plan.md (experiments E0..E8)
 docs/paper/               paper PDF + LaTeX (gitignored; scripts/fetch_paper.sh)
-src/csrv2_repro/          our Python package (uv-installed, importable as csrv2_repro)
-configs/                  one config per experiment, named <EXP_ID>_<desc>.yaml
+src/csrv2_repro/          our package; entry points: uv run python -m csrv2_repro.<module> --config ...
+configs/                  one TOML config per run, named <EXP_ID>_<desc>.toml (stdlib tomllib)
 scripts/                  small CLI helpers (fetch_paper.sh, upstream_rundir.sh)
 jobs/snellius/            env.sh, setup_env.sh, template.job, <EXP_ID>_*.job
 results/<EXP_ID>/         committed metrics (small)
