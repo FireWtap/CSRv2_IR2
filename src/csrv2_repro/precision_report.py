@@ -88,6 +88,41 @@ def active_set_agreement(sae, a: np.ndarray, b: np.ndarray, k: int, batch_size: 
     }
 
 
+def paired_section(mteb_a: Path, mteb_b: Path, ref_a: dict, ref_b: dict, delta: float,
+                   qrels_cache: dict) -> tuple[dict, list[dict]]:
+    """Per-task and macro paired stats (b - a) from mteb predictions; checks the per-query means
+    reproduce mteb's reported nDCG@10. Returns (stats, per-query rows)."""
+    from csrv2_repro import paired
+
+    stats, pairs, rows = {}, {}, []
+    for task in ref_a["per_task"]:
+        if task not in qrels_cache:
+            qrels_cache[task] = paired.load_qrels(task)
+        qrels, ignore_ids = qrels_cache[task]
+        qa = paired.per_query_ndcg10(paired.find_predictions(mteb_a, task), qrels, ignore_ids)
+        qb = paired.per_query_ndcg10(paired.find_predictions(mteb_b, task), qrels, ignore_ids)
+        for q, ref, name in ((qa, ref_a, "a"), (qb, ref_b, "b")):
+            mean = round(float(np.mean(list(q.values()))), 2)
+            if abs(mean - ref["per_task"][task]) > 0.011:
+                raise RuntimeError(f"{task}/{name}: per-query mean {mean} != mteb {ref['per_task'][task]}")
+        stats[task] = paired.paired_stats(qa, qb, delta)
+        pairs[task] = (qa, qb)
+        rows += [{"task": task, "query_id": q, "fp32": qa[q], "bf16": qb[q]} for q in sorted(qa)]
+    stats["macro"] = paired.macro_stats(pairs, delta)
+    return stats, rows
+
+
+def write_rows(path: Path, rows: list[dict]) -> None:
+    import csv
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(rows[0]))
+        w.writeheader()
+        for r in rows:
+            w.writerow({k: round(v, 4) if isinstance(v, float) else v for k, v in r.items()})
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawTextHelpFormatter
@@ -95,12 +130,20 @@ def main() -> None:
     parser.add_argument("--dense", nargs=2, metavar=("FP32_RUN", "BF16_RUN"), required=True)
     parser.add_argument("--sparse", nargs=2, metavar=("FP32_RUN", "BF16_RUN"), required=True)
     parser.add_argument("--out", default=str(RESULTS / "E1p" / "precision_report.json"))
+    parser.add_argument("--delta", type=float, default=0.2,
+                        help="TOST equivalence margin in nDCG@10 points (proposal, see ledger D-005)")
     args = parser.parse_args()
 
     report: dict = {"dense": {}, "sparse": {}}
+    qrels_cache: dict = {}
+    out = Path(args.out)
 
     d32, d16 = (load_summary(p) for p in args.dense)
     report["dense"]["ndcg10"] = ndcg_table(d32, d16)
+    report["dense"]["paired_bf16_minus_fp32"], rows = paired_section(
+        Path(args.dense[0]) / "mteb", Path(args.dense[1]) / "mteb", d32, d16, args.delta, qrels_cache
+    )
+    write_rows(out.with_name("per_query_dense.csv"), rows)
     report["dense"]["cosine_fp32_vs_bf16"] = {
         f"{task}/{side}": {
             "mean": round(float(cos.mean()), 6),
@@ -114,6 +157,14 @@ def main() -> None:
     report["sparse"]["ndcg10_by_k"] = {
         k: ndcg_table(s32["per_k"][k], s16["per_k"][k]) for k in s32["per_k"] if k in s16["per_k"]
     }
+    report["sparse"]["paired_bf16_minus_fp32"], rows = {}, []
+    for k in report["sparse"]["ndcg10_by_k"]:
+        report["sparse"]["paired_bf16_minus_fp32"][k], k_rows = paired_section(
+            Path(args.sparse[0]) / "mteb" / f"k{k}", Path(args.sparse[1]) / "mteb" / f"k{k}",
+            s32["per_k"][k], s16["per_k"][k], args.delta, qrels_cache,
+        )
+        rows += [{"k": int(k), **r} for r in k_rows]
+    write_rows(out.with_name("per_query_sparse.csv"), rows)
     report["sparse"]["faithful_minus_cached"] = {
         "fp32": s32.get("faithful_minus_cached"),
         "bf16": s16.get("faithful_minus_cached"),
@@ -126,10 +177,17 @@ def main() -> None:
             f"{task}/{side}": active_set_agreement(sae, a, b, k) for task, side, a, b in pairs
         }
 
-    report["provenance"] = provenance({"dense": args.dense, "sparse": args.sparse})
-    write_json(Path(args.out), report)
+    report["provenance"] = provenance({"dense": args.dense, "sparse": args.sparse, "delta": args.delta})
+    write_json(out, report)
 
     print("dense nDCG@10:", json.dumps(report["dense"]["ndcg10"]))
+    m = report["dense"]["paired_bf16_minus_fp32"]["macro"]
+    print(f"dense paired macro diff {m['mean_diff']} ci90 {m['ci90']} equivalent@{args.delta}: "
+          f"{m['equivalent_tost_0.05']}")
+    for k, s in report["sparse"]["paired_bf16_minus_fp32"].items():
+        m = s["macro"]
+        print(f"sparse k={k} paired macro diff {m['mean_diff']} ci90 {m['ci90']} equivalent@{args.delta}: "
+              f"{m['equivalent_tost_0.05']}")
     for k, t in report["sparse"]["ndcg10_by_k"].items():
         agree = report["sparse"]["active_set_agreement"][k]
         print(

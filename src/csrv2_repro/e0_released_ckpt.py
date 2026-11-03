@@ -44,6 +44,9 @@ def run_mteb(model, tasks: list[str], out: Path, overwrite: bool, encode_kwargs:
         output_folder=str(out),
         show_progress_bar=True,
         encode_kwargs=encode_kwargs,
+        # Per-query rankings for paired tests (csrv2_repro.paired); @1000 metrics are truncated to top 100.
+        save_predictions=True,
+        top_k=100,
     )
     scores = collect_ndcg10(out, tasks)
     return {"per_task": scores, "mean": mean_or_none(scores.values())}

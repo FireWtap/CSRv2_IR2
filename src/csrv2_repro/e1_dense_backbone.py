@@ -90,6 +90,10 @@ def main() -> None:
         output_folder=str(mteb_dir),
         encode_kwargs={"batch_size": encoder.batch_size},
         overwrite_results=args.overwrite,
+        # Per-query rankings for paired tests (csrv2_repro.paired). top_k=100 truncates the run before
+        # mteb scores it: metrics @<=100 are unchanged, @1000 metrics are not comparable to a full run.
+        save_predictions=True,
+        top_k=100,
     )
 
     per_task = collect_ndcg10(mteb_dir, tasks)

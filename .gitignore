@@ -24,3 +24,6 @@ wandb/
 
 # SLURM logs
 slurm-*.out
+
+# mteb per-query rankings (MBs); the per-query nDCG CSVs derived from them are committed instead
+results/**/*_predictions.json
