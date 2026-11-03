@@ -27,6 +27,16 @@ Sources: `third_party/CSRv2@3b2d4d2` (text/), released `Y-Research-Group/CSRv2-r
   the full test set. NFCorpus, FiQA2018, SciFact use their train splits. Applies to the CSRv2 and
   CSRv2-linear rows of Table 3, not to the dense/MRL baselines. Corpus docs of all tasks are also in SAE
   training (unsupervised/transductive).
+  *Verification:* certain for the released code: the HF repos of those 5 tasks only have test qrels, the
+  `else` branch takes 80% of them, the README/training.md finetune command reads exactly this dataset
+  (`MTEB_single_task_type_finetuning_dataset/retrieval`), and `eval_all()` scores the full mteb `test` split.
+  For the released checkpoint itself it is strong evidence, not proof: re-counting the recipe
+  (scratchpad script, current HF data) gives 61806 finetune pairs (35085 train-split + 26721 test-derived);
+  `trainer_state.json` implies <=69156 pairs (17289 steps x bs 4, 1 GPU, no accumulation). Train splits only
+  (35085 -> ~8.8k steps) cannot explain 17289 steps under the documented 20k cap; with test-derived pairs it
+  is close but not exact (gap ~7k, unknown cause: other cap, dataset revisions, or code not in the repo;
+  note the repo's `get_embeddings_of_each_dataset.py` does not even parse, so it is not what they ran).
+  The SAE-side leakage can only be checked in code, not from the checkpoint.
 - **One SAE for all k vs one per k: unresolved.** The model card says one SAE serves every k thanks to a
   "Multi-TopK loss", and ships a single SAE (default k=2). The released `CSR_training.py` has no multi-k
   loss: one `--topk` target (+ the 4k auxiliary term). So either the released SAE came from code not in the
