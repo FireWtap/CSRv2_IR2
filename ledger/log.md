@@ -15,3 +15,4 @@ Read with `tail -n 30 ledger/log.md`, search with `grep -n "E4" ledger/log.md`.
 2026-11-03 | francesco/claude | E0,E1 | DONE | E0/E1 code + configs; CachedEncoder == plain mteb (MiniLM NFCorpus 31.59, right pad); E0 cached path == upstream SparseEncoder path (diff 0.00, fp32+bf16, fake ckpt) | src/csrv2_repro/
 2026-11-03 | francesco/claude | E1p | NOTE | job ready: bf16 vs fp32 on NFCorpus+SciFact (dense + released ckpt, all k, active-set Jaccard); not yet run on Snellius | jobs/snellius/E1p_precision.job
 2026-11-03 | francesco/claude | E1 | BLOCKED | full 8-task E1 waits for D-005 (dtype) from E1p results | configs/E1_dense_*.toml
+2026-11-03 | francesco/claude | E1p | NOTE | env set up on Snellius, models+NFCorpus/SciFact pre-downloaded; E1p submitted on gpu_a100, pending (all partitions down) | slurm 28872577
