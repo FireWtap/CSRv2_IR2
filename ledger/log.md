@@ -16,3 +16,6 @@ Read with `tail -n 30 ledger/log.md`, search with `grep -n "E4" ledger/log.md`.
 2026-11-03 | francesco/claude | E1p | NOTE | job ready: bf16 vs fp32 on NFCorpus+SciFact (dense + released ckpt, all k, active-set Jaccard); not yet run on Snellius | jobs/snellius/E1p_precision.job
 2026-11-03 | francesco/claude | E1 | BLOCKED | full 8-task E1 waits for D-005 (dtype) from E1p results | configs/E1_dense_*.toml
 2026-11-03 | francesco/claude | E1p | NOTE | env set up on Snellius, models+NFCorpus/SciFact pre-downloaded; E1p submitted on gpu_a100, pending (all partitions down) | slurm 28872577
+2026-11-03 | francesco/claude | upstream | BUG | test contamination: for 5/8 retrieval tasks (no train split) upstream LoRA finetune + SAE label-CL train on 80% of TEST qrels, eval on full test; affects CSRv2(-linear) rows of Tab.3 -> needs a decision | docs/reproduction/upstream_training.md
+2026-11-03 | francesco/claude | upstream | NOTE | released CSR_training.py trains one --topk target per run (no multi-k loss), but model card claims one Multi-TopK SAE for all k; unresolved | docs/reproduction/upstream_training.md
+2026-11-03 | francesco/claude | E6b | NOTE | released ckpt trainer_state: LoRA 1 epoch (stopped 16000/17289), per-device bs 4, peak lr 1e-5, warmup ~1800 steps; paper says 10 ep / 2e-5 / 1000 | docs/reproduction/upstream_training.md
