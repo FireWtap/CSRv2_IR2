@@ -38,3 +38,8 @@ not with our own retraining. Principle: use the authors' artifacts wherever they
 and the paper (known so far: ckpt trainer_state differs from the paper recipe, and test-qrel leakage in its recipe;
 see docs/reproduction/upstream_training.md). Own retraining (E6) stays optional. CSR and CSRv2-linear have no released
 Qwen3-4B ckpt (HF org checked 2026-11-04), so those columns need E3-E5. Status: active.
+
+## D-007 (2026-11-04, francesco) Resolves D-005: all Table 3 evals in fp32
+E1p (results/E1p/precision_report.json): bf16-fp32 dense macro dnDCG@10 = -0.10, 95% CI [-0.26, 0.03]; TOST at
+delta 0.2 not passed on 2 tasks, so bf16 equivalence is not established. Evals use fp32, as upstream does. Cost ~12 A100-h
+per backbone pass, so eval8 runs as three parallel jobs (PART=both|e6b|query). Status: active.
