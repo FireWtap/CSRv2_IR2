@@ -1,0 +1,11 @@
+# E1 (primary): dense Qwen3-Embedding-4B, 8 retrieval tasks, upstream prompt protocol
+# (instruction on queries AND documents, as all_step_pipeline_mteb_evaluation.py does).
+exp_id = "E1"
+run_name = "qwen3_4b_dense_prompt_both"
+model = "Qwen/Qwen3-Embedding-4B"
+revision = "5cf2132abc99cad020ac570b19d031efec650f2b"
+# dtype: none on purpose (ledger D-005). Pass --dtype at run time; run_name gets a _fp32/_bf16 suffix.
+max_seq_length = 512       # matches the released CSRv2-retrieval sentence_bert_config.json
+batch_size = 16
+prompt_mode = "both"
+paper_target_mean = 58.37  # Table 3, Qwen3-Embed-4B row, Retrieval

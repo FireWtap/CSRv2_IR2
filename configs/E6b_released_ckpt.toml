@@ -1,0 +1,17 @@
+# E6b: released Y-Research-Group/CSRv2-retrieval ckpt on all 8 retrieval tasks x all k, upstream protocol
+# (D-004), against Table 3's CSRv2 column. Cached path only: E0 checks it equals the upstream SparseEncoder path.
+# dtype: none on purpose (ledger D-005). Pass --dtype at run time; run_name gets a _fp32/_bf16 suffix.
+exp_id = "E6b"
+run_name = "released_ckpt"
+model = "Y-Research-Group/CSRv2-retrieval"
+revision = "af16198ddd83dec2d747756a1fb592378c15c4ac"
+batch_size = 16            # upstream uses 2; only affects padding, see ledger D-004
+ks = [2, 4, 16, 64, 2560]
+faithful_ks = []           # upstream path costs a full backbone pass per k; validated in E0 on 2 tasks
+
+[paper_target_mean_by_k]   # Table 3, CSRv2, 8-task retrieval mean
+2 = 23.93
+4 = 29.71
+16 = 45.09
+64 = 55.64
+2560 = 58.23

@@ -1,0 +1,26 @@
+#!/bin/bash
+# E1p + E0: bf16 vs fp32 inference on NFCorpus + SciFact (ledger D-005), then the comparison report.
+# Submit from the repo root:  sbatch jobs/snellius/E1p_precision.job
+# Resumable: embedding caches and finished mteb results are reused on resubmission.
+#SBATCH --job-name=E1p_precision
+#SBATCH --partition=gpu_a100
+#SBATCH --gpus-per-node=1
+#SBATCH --cpus-per-task=18
+#SBATCH --time=04:00:00
+#SBATCH --output=outputs/slurm/%x-%j.out
+
+set -euo pipefail
+cd "$SLURM_SUBMIT_DIR"
+source jobs/snellius/env.sh
+echo "commit $(git rev-parse --short HEAD) | upstream $(git -C third_party/CSRv2 rev-parse --short HEAD) | node $(hostname)"
+nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
+
+run() { echo "=== $* ($(date +%T))"; uv run --frozen python -m "$@"; }
+run csrv2_repro.e1_dense_backbone --config configs/E1p_dense_bf16.toml
+run csrv2_repro.e1_dense_backbone --config configs/E1p_dense_fp32.toml
+run csrv2_repro.e0_released_ckpt --config configs/E0_released_ckpt_bf16.toml
+run csrv2_repro.e0_released_ckpt --config configs/E0_released_ckpt.toml
+run csrv2_repro.precision_report \
+    --dense results/E1p/qwen3_4b_dense_fp32 results/E1p/qwen3_4b_dense_bf16 \
+    --sparse results/E0/released_ckpt_fp32 results/E0/released_ckpt_bf16
+echo "=== done ($(date +%T))"
