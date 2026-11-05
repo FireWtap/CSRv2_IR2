@@ -1,0 +1,118 @@
+{
+  "exp_id": "E2",
+  "run_name": "qwen3_4b_mrl_prompt_both_fp32",
+  "metric": "nDCG@10 x100, test split",
+  "dense_run": "qwen3_4b_dense_prompt_both_fp32",
+  "per_k": {
+    "2": {
+      "per_task": {
+        "ArguAna": 0.02,
+        "NFCorpus": 0.76,
+        "CQADupstackGamingRetrieval": 0.04,
+        "CQADupstackUnixRetrieval": 0.08,
+        "ClimateFEVERHardNegatives": 0.0,
+        "FiQA2018": 0.06,
+        "SCIDOCS": 0.05,
+        "SciFact": 0.24
+      },
+      "mean": 0.16
+    },
+    "4": {
+      "per_task": {
+        "ArguAna": 0.94,
+        "NFCorpus": 1.81,
+        "CQADupstackGamingRetrieval": 0.25,
+        "CQADupstackUnixRetrieval": 0.08,
+        "ClimateFEVERHardNegatives": 0.09,
+        "FiQA2018": 0.0,
+        "SCIDOCS": 0.26,
+        "SciFact": 0.94
+      },
+      "mean": 0.55
+    },
+    "16": {
+      "per_task": {
+        "ArguAna": 30.2,
+        "NFCorpus": 9.89,
+        "CQADupstackGamingRetrieval": 17.35,
+        "CQADupstackUnixRetrieval": 15.57,
+        "ClimateFEVERHardNegatives": 5.22,
+        "FiQA2018": 10.0,
+        "SCIDOCS": 6.37,
+        "SciFact": 24.99
+      },
+      "mean": 14.95
+    },
+    "64": {
+      "per_task": {
+        "ArguAna": 65.12,
+        "NFCorpus": 26.02,
+        "CQADupstackGamingRetrieval": 56.61,
+        "CQADupstackUnixRetrieval": 47.66,
+        "ClimateFEVERHardNegatives": 28.96,
+        "FiQA2018": 41.69,
+        "SCIDOCS": 21.33,
+        "SciFact": 62.87
+      },
+      "mean": 43.78
+    },
+    "2560": {
+      "per_task": {
+        "ArguAna": 75.4,
+        "NFCorpus": 40.39,
+        "CQADupstackGamingRetrieval": 71.26,
+        "CQADupstackUnixRetrieval": 59.56,
+        "ClimateFEVERHardNegatives": 37.93,
+        "FiQA2018": 56.57,
+        "SCIDOCS": 28.16,
+        "SciFact": 77.79
+      },
+      "mean": 55.88
+    }
+  },
+  "paper_target_mean_by_k": {
+    "2": 5.23,
+    "4": 6.59,
+    "16": 20.4,
+    "64": 44.13,
+    "2560": 58.31
+  },
+  "embedding_cache": "/scratch-shared/scur0933/csrv2/emb_cache/qwen3_4b_dense_prompt_both_fp32",
+  "provenance": {
+    "timestamp_utc": "2026-11-05T01:41:06+00:00",
+    "git_commit": "20ab5b1438a3911e8fe42b822db8f81986531be0",
+    "git_dirty": true,
+    "upstream_commit": "3b2d4d27ec1f9d70af943806ece8dfd665b8d28b",
+    "slurm_job_id": "28894853",
+    "host": "gcn34.local.snellius.surf.nl",
+    "gpu": "NVIDIA A100-SXM4-40GB",
+    "python": "3.11.18",
+    "packages": {
+      "torch": "2.7.0",
+      "transformers": "4.55.0",
+      "sentence-transformers": "5.0.0",
+      "mteb": "1.38.39",
+      "peft": "0.15.2"
+    },
+    "config": {
+      "exp_id": "E2",
+      "run_name": "qwen3_4b_mrl_prompt_both_fp32",
+      "dense_config": "configs/E1_dense_both.toml",
+      "ks": [
+        2,
+        4,
+        16,
+        64,
+        2560
+      ],
+      "paper_target_mean_by_k": {
+        "2": 5.23,
+        "4": 6.59,
+        "16": 20.4,
+        "64": 44.13,
+        "2560": 58.31
+      },
+      "dtype": "float32"
+    }
+  }
+}

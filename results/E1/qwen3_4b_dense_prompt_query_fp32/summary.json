@@ -1,0 +1,46 @@
+{
+  "exp_id": "E1",
+  "run_name": "qwen3_4b_dense_prompt_query_fp32",
+  "metric": "nDCG@10 x100, test split",
+  "per_task": {
+    "ArguAna": 75.0,
+    "NFCorpus": 41.05,
+    "CQADupstackGamingRetrieval": 69.84,
+    "CQADupstackUnixRetrieval": 60.61,
+    "ClimateFEVERHardNegatives": 48.05,
+    "FiQA2018": 61.66,
+    "SCIDOCS": 31.26,
+    "SciFact": 78.05
+  },
+  "mean": 58.19,
+  "paper_target_mean": 58.37,
+  "embedding_cache": "/scratch-shared/scur0933/csrv2/emb_cache/qwen3_4b_dense_prompt_query_fp32",
+  "provenance": {
+    "timestamp_utc": "2026-11-05T01:04:20+00:00",
+    "git_commit": "20ab5b1438a3911e8fe42b822db8f81986531be0",
+    "git_dirty": true,
+    "upstream_commit": "3b2d4d27ec1f9d70af943806ece8dfd665b8d28b",
+    "slurm_job_id": "28894858",
+    "host": "gcn61.local.snellius.surf.nl",
+    "gpu": "NVIDIA A100-SXM4-40GB",
+    "python": "3.11.18",
+    "packages": {
+      "torch": "2.7.0",
+      "transformers": "4.55.0",
+      "sentence-transformers": "5.0.0",
+      "mteb": "1.38.39",
+      "peft": "0.15.2"
+    },
+    "config": {
+      "exp_id": "E1",
+      "run_name": "qwen3_4b_dense_prompt_query_fp32",
+      "model": "Qwen/Qwen3-Embedding-4B",
+      "revision": "5cf2132abc99cad020ac570b19d031efec650f2b",
+      "max_seq_length": 512,
+      "batch_size": 16,
+      "prompt_mode": "query",
+      "paper_target_mean": 58.37,
+      "dtype": "float32"
+    }
+  }
+}
