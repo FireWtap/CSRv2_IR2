@@ -1,0 +1,38 @@
+exp_id = "E3"
+run_name = "query_heldout_v1"
+seed = 42
+test_fraction = 0.2
+# Existing dev splits are kept. Otherwise validation may only come from the training pool.
+validation_fraction = 0.0
+
+[sources.ArguAna]
+path = "mteb/arguana"
+revision = "c22ab2a51041ffd869aaddef7af8d8215647e41a"
+
+[sources.NFCorpus]
+path = "mteb/nfcorpus"
+revision = "ec0fa4fe99da2ff19ca1214b7966684033a58814"
+
+[sources.CQADupstackGamingRetrieval]
+path = "mteb/cqadupstack-gaming"
+revision = "4885aa143210c98657558c04aaf3dc47cfb54340"
+
+[sources.CQADupstackUnixRetrieval]
+path = "mteb/cqadupstack-unix"
+revision = "6c6430d3a6d36f8d2a829195bc5dc94d7e063e53"
+
+[sources.ClimateFEVERHardNegatives]
+path = "mteb/ClimateFEVER_test_top_250_only_w_correct-v2"
+revision = "3a309e201f3c2c4b13bd4a367a8f37eee2ec1d21"
+
+[sources.FiQA2018]
+path = "mteb/fiqa"
+revision = "27a168819829fe9bcd655c2df245fb19452e8e06"
+
+[sources.SCIDOCS]
+path = "mteb/scidocs"
+revision = "f8c2fcf00f625baaa80f62ec5bd9e1fff3b8ae88"
+
+[sources.SciFact]
+path = "mteb/scifact"
+revision = "0228b52cf27578f30900b9e5271d331663a030d7"

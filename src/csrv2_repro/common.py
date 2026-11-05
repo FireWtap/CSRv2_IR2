@@ -107,7 +107,10 @@ def resolve_dtype(cfg: dict, override: str | None) -> dict:
     return cfg
 
 
-def run_mteb(model, tasks: list[str], out: Path, overwrite: bool, encode_kwargs: dict) -> dict:
+def run_mteb(
+    model, tasks: list[str], out: Path, overwrite: bool, encode_kwargs: dict,
+    split_manifest: dict | None = None,
+) -> dict:
     """mteb.MTEB.run on the test split, saving per-query rankings (top 100) for paired tests.
 
     top_k=100 truncates the run before mteb scores it: metrics @<=100 are exact, @1000 are not.
@@ -117,9 +120,28 @@ def run_mteb(model, tasks: list[str], out: Path, overwrite: bool, encode_kwargs:
 
     import mteb
 
+    from csrv2_repro.splits import configure_mteb_task, validate_manifest
+
+    selected_tasks = mteb.get_tasks(tasks=tasks, languages=["eng"])
+    identity = {"protocol": "full-test", "manifest_sha256": None}
+    if split_manifest is not None:
+        validate_manifest(split_manifest)
+        if set(tasks) - split_manifest["tasks"].keys():
+            raise ValueError("Every evaluation task must be present in the split manifest")
+        identity = {
+            "protocol": split_manifest["protocol"],
+            "manifest_sha256": split_manifest["sha256"],
+        }
+        selected_tasks = [configure_mteb_task(t, split_manifest) for t in selected_tasks]
+    marker = out / "evaluation_protocol.json"
+    if marker.exists() and json.loads(marker.read_text()) != identity:
+        raise ValueError(f"Evaluation protocol mismatch in {out}; use a separate output directory")
+    if split_manifest is not None and not marker.exists() and out.exists() and any(out.iterdir()):
+        raise ValueError(f"Unidentified existing results in {out}; use a separate output directory")
     if overwrite and out.exists():
         shutil.rmtree(out)
-    mteb.MTEB(tasks=mteb.get_tasks(tasks=tasks, languages=["eng"])).run(
+    write_json(marker, identity)
+    mteb.MTEB(tasks=selected_tasks).run(
         model,
         eval_splits=["test"],
         output_folder=str(out),

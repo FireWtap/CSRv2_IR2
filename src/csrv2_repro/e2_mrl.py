@@ -16,7 +16,6 @@ import numpy as np
 
 from csrv2_repro.common import (
     REPO_ROOT,
-    RESULTS,
     RETRIEVAL_TASKS,
     load_config,
     provenance,
@@ -25,6 +24,7 @@ from csrv2_repro.common import (
     write_json,
 )
 from csrv2_repro.e1_dense_backbone import build_dense_encoder
+from csrv2_repro.splits import evaluation_context
 
 
 def truncate(k: int):
@@ -42,6 +42,7 @@ def main() -> None:
     parser.add_argument("--dtype", help="float32|bfloat16, must match the E1 run (D-005)")
     parser.add_argument("--tasks", nargs="+", help="override the task list (debugging)")
     parser.add_argument("--ks", nargs="+", type=int, help="override the k list (debugging)")
+    parser.add_argument("--split-manifest", help="evaluate the saved held-out query partitions")
     parser.add_argument(
         "--overwrite", action="store_true", help="recompute mteb scores (cache is kept)"
     )
@@ -56,7 +57,8 @@ def main() -> None:
         raise ValueError(f"E2 dtype {cfg['dtype']} != E1 dtype {dense_cfg['dtype']}")
     tasks = args.tasks or cfg.get("tasks", dense_cfg.get("tasks", RETRIEVAL_TASKS))
     ks = args.ks or cfg["ks"]
-    out_dir = RESULTS / cfg["exp_id"] / cfg["run_name"]
+    cfg["ks"] = ks
+    cfg, manifest, out_dir = evaluation_context(cfg, tasks, args.split_manifest)
 
     encoder = build_dense_encoder(dense_cfg)
     dim = encoder.model.get_sentence_embedding_dimension()
@@ -66,7 +68,8 @@ def main() -> None:
     summary = {
         "exp_id": cfg["exp_id"],
         "run_name": cfg["run_name"],
-        "metric": "nDCG@10 x100, test split",
+        "metric": "nDCG@10 x100, manifest test queries" if manifest else "nDCG@10 x100, test split",
+        "evaluation": cfg.get("evaluation", {"protocol": "full-test"}),
         "dense_run": dense_cfg["run_name"],
         "per_k": {},
         "paper_target_mean_by_k": cfg.get("paper_target_mean_by_k"),
@@ -81,6 +84,7 @@ def main() -> None:
         summary["per_k"][str(k)] = run_mteb(
             encoder, tasks, out_dir / "mteb" / f"k{k}", args.overwrite,
             {"batch_size": encoder.batch_size},
+            split_manifest=manifest,
         )
         logging.info("MRL k=%d nDCG@10 %s", k, summary["per_k"][str(k)])
         write_json(out_dir / "summary.json", {**summary, "provenance": provenance(cfg)})

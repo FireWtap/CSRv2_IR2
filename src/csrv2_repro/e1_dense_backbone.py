@@ -16,7 +16,6 @@ import torch
 
 from csrv2_repro.common import (
     OUTPUTS,
-    RESULTS,
     RETRIEVAL_TASKS,
     load_config,
     provenance,
@@ -26,6 +25,7 @@ from csrv2_repro.common import (
     write_json,
 )
 from csrv2_repro.encoders import CachedEncoder
+from csrv2_repro.splits import evaluation_context
 
 
 def cache_root() -> Path:
@@ -74,6 +74,7 @@ def main() -> None:
     parser.add_argument("--config", required=True)
     parser.add_argument("--dtype", help="float32|bfloat16, for configs without dtype (D-005)")
     parser.add_argument("--tasks", nargs="+", help="override the task list (debugging)")
+    parser.add_argument("--split-manifest", help="evaluate the saved held-out query partitions")
     parser.add_argument(
         "--overwrite", action="store_true", help="recompute mteb scores (cache is kept)"
     )
@@ -84,16 +85,18 @@ def main() -> None:
 
     cfg = resolve_dtype(load_config(args.config), args.dtype)
     tasks = args.tasks or cfg.get("tasks", RETRIEVAL_TASKS)
-    out_dir = RESULTS / cfg["exp_id"] / cfg["run_name"]
+    cfg, manifest, out_dir = evaluation_context(cfg, tasks, args.split_manifest)
     encoder = build_dense_encoder(cfg)
 
     res = run_mteb(
-        encoder, tasks, out_dir / "mteb", args.overwrite, {"batch_size": encoder.batch_size}
+        encoder, tasks, out_dir / "mteb", args.overwrite, {"batch_size": encoder.batch_size},
+        split_manifest=manifest,
     )
     summary = {
         "exp_id": cfg["exp_id"],
         "run_name": cfg["run_name"],
-        "metric": "nDCG@10 x100, test split",
+        "metric": "nDCG@10 x100, manifest test queries" if manifest else "nDCG@10 x100, test split",
+        "evaluation": cfg.get("evaluation", {"protocol": "full-test"}),
         **res,
         "paper_target_mean": cfg.get("paper_target_mean"),
         "embedding_cache": str(encoder.cache_dir),

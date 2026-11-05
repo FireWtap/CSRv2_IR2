@@ -1,0 +1,25 @@
+#!/bin/bash
+# Matched dense/MRL/released-reference evaluation for D-007. No training is launched.
+# sbatch --export=ALL,DTYPE=float32 jobs/snellius/E3_heldout_eval.job
+# Runtime is an allocation estimate; caches and completed tasks allow resuming.
+#SBATCH --job-name=heldout8
+#SBATCH --partition=gpu_a100
+#SBATCH --gpus-per-node=1
+#SBATCH --cpus-per-task=18
+#SBATCH --time=48:00:00
+#SBATCH --output=outputs/slurm/%x-%j.out
+
+set -euo pipefail
+: "${DTYPE:?Set DTYPE=float32 or bfloat16 per D-005}"
+case "$DTYPE" in float32|bfloat16) ;; *) echo "Invalid DTYPE" >&2; exit 2;; esac
+cd "$SLURM_SUBMIT_DIR"
+source jobs/snellius/env.sh
+split_manifest="${SPLIT_MANIFEST:-results/E3/split_manifest.json}"
+test -f "$split_manifest"
+
+run() {
+    uv run --frozen python -m "$@" --dtype "$DTYPE" --split-manifest "$split_manifest"
+}
+run csrv2_repro.e1_dense_backbone --config configs/E1_dense_both.toml
+run csrv2_repro.e2_mrl --config configs/E2_mrl_both.toml
+run csrv2_repro.e0_released_ckpt --config configs/E6b_released_ckpt.toml

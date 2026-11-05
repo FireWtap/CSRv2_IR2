@@ -1,0 +1,20 @@
+#!/bin/bash
+# Prepare first on the login node, then submit with PREPARED_QUERIES=<printed JSON path>.
+#SBATCH --job-name=E3-queries
+#SBATCH --partition=gpu_a100
+#SBATCH --gpus-per-node=1
+#SBATCH --cpus-per-task=18
+#SBATCH --time=00:45:00
+#SBATCH --output=outputs/slurm/%x-%j.out
+
+set -euo pipefail
+cd "$SLURM_SUBMIT_DIR"
+source jobs/snellius/env.sh
+: "${PREPARED_QUERIES:?Set PREPARED_QUERIES to the prepared input JSON}"
+test -f "$PREPARED_QUERIES"
+# The isolated worktree reuses the frozen parent venv without changing its editable install.
+export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"
+export HF_HUB_OFFLINE=1
+export TRANSFORMERS_OFFLINE=1
+uv run --frozen --no-sync python -m csrv2_repro.e3_missing_queries \
+    --config configs/E3_missing_queries.toml --prepared "$PREPARED_QUERIES"

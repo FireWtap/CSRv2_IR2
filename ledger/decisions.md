@@ -38,3 +38,27 @@ not with our own retraining. Principle: use the authors' artifacts wherever they
 and the paper (known so far: ckpt trainer_state differs from the paper recipe, and test-qrel leakage in its recipe;
 see docs/reproduction/upstream_training.md). Own retraining (E6) stays optional. CSR and CSRv2-linear have no released
 Qwen3-4B ckpt (HF org checked 2026-11-04), so those columns need E3-E5. Status: active.
+
+## D-007 (2026-11-04, Samu / codex) Shared query-held-out training and evaluation
+User authorized following the missing-train fallback while evaluating only actual held-out queries.
+Preserve official train/dev/test; for the five test-only tasks split sorted query IDs 80/20 with
+NumPy RandomState(seed=42), rounding the held-out count up. All judgments for a query stay together.
+LoRA and SAE preparation must consume the same frozen manifest; never add held-out query texts or
+labels back as singleton training examples. Optional validation comes only from the training pool;
+default fraction is 0 (keep the requested 80/20), while existing dev splits remain validation.
+Search the full corpus and compare all methods on identical manifest test queries. Full-corpus
+unlabeled exposure is transductive; query-disjointness does not guarantee distinct document/text content.
+This fixes the released recipe's full-test reuse and intentionally replaces its inconsistent row/query
+splits with one deterministic query partition. Held-out scores are a separate protocol, not directly
+comparable to paper Table 3 averages. D-006's full-test released-checkpoint reference remains separate;
+its training overlap stays unknown even when rescored on our held-out subset. Pin MTEB 1.38.39 dataset
+revisions and verify qrel hashes in our loader; upstream remains read-only. Details and commands:
+docs/reproduction/splits.md; manifest: results/E3/split_manifest.json. Status: active.
+
+## D-008 (2026-11-05, Samu / codex) Complete the existing dense fp32 query cache
+User authorized encoding the missing official train/validation queries for NFCorpus, FiQA2018 and
+SciFact. Match the populated E1 cache: pinned Qwen3-Embedding-4B revision 5cf2132, fp32 inference,
+left padding, max length 512, batch 16 and upstream task instructions on queries. Query prompts are
+identical for E1 both/query modes; encode once, preserve ordered IDs and D-007 manifest provenance.
+This completes data extraction for the existing fp32 protocol; it does not settle the broader
+D-004/D-005 sensitivity comparisons or authorize training. Status: active.

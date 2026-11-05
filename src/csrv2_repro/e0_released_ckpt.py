@@ -22,7 +22,6 @@ import torch
 
 from csrv2_repro.common import (
     OUTPUTS,
-    RESULTS,
     RETRIEVAL_TASKS,
     load_config,
     provenance,
@@ -32,6 +31,7 @@ from csrv2_repro.common import (
     write_json,
 )
 from csrv2_repro.encoders import CachedEncoder, sae_topk_transform
+from csrv2_repro.splits import evaluation_context
 
 
 def main() -> None:
@@ -42,6 +42,7 @@ def main() -> None:
     parser.add_argument("--dtype", help="float32|bfloat16, for configs without dtype (D-005)")
     parser.add_argument("--tasks", nargs="+", help="override the task list (debugging)")
     parser.add_argument("--ks", nargs="+", type=int, help="override the k list (debugging)")
+    parser.add_argument("--split-manifest", help="evaluate the saved held-out query partitions")
     parser.add_argument(
         "--overwrite", action="store_true", help="recompute mteb scores (cache is kept)"
     )
@@ -56,7 +57,8 @@ def main() -> None:
     faithful_ks = [k for k in cfg.get("faithful_ks", []) if k in ks]
     dtype = cfg["dtype"]
     batch_size = cfg.get("batch_size", 2)
-    out_dir = RESULTS / cfg["exp_id"] / cfg["run_name"]
+    cfg["ks"] = ks
+    cfg, manifest, out_dir = evaluation_context(cfg, tasks, args.split_manifest)
     cache_root = Path(os.environ.get("SCRATCH_ROOT", OUTPUTS)) / "emb_cache"
 
     from sentence_transformers import SentenceTransformer, SparseEncoder
@@ -92,7 +94,8 @@ def main() -> None:
     summary = {
         "exp_id": cfg["exp_id"],
         "run_name": cfg["run_name"],
-        "metric": "nDCG@10 x100, test split",
+        "metric": "nDCG@10 x100, manifest test queries" if manifest else "nDCG@10 x100, test split",
+        "evaluation": cfg.get("evaluation", {"protocol": "full-test"}),
         "per_k": {},
         "faithful_per_k": {},
         "faithful_minus_cached": {},
@@ -102,7 +105,8 @@ def main() -> None:
     for k in ks:
         encoder.transform = sae_topk_transform(sae, k)
         summary["per_k"][str(k)] = run_mteb(
-            encoder, tasks, out_dir / "mteb" / f"k{k}", args.overwrite, {"batch_size": batch_size}
+            encoder, tasks, out_dir / "mteb" / f"k{k}", args.overwrite, {"batch_size": batch_size},
+            split_manifest=manifest,
         )
         logging.info("cached k=%d nDCG@10 %s", k, summary["per_k"][str(k)])
 
@@ -117,6 +121,7 @@ def main() -> None:
                 out_dir / "mteb" / f"faithful_k{k}",
                 args.overwrite,
                 {"convert_to_sparse_tensor": False, "batch_size": batch_size},
+                split_manifest=manifest,
             )
             summary["faithful_per_k"][str(k)] = faithful
             summary["faithful_minus_cached"][str(k)] = {

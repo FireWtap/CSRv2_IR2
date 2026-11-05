@@ -1,0 +1,10 @@
+exp_id = "E3"
+run_name = "missing_queries_fp32"
+dense_config = "configs/E1_dense_both.toml"
+dtype = "float32"
+split_manifest = "results/E3/split_manifest.json"
+tasks = ["NFCorpus", "FiQA2018", "SciFact"]
+partitions = ["train", "validation"]
+
+# Match the already populated dense cache; query prompts are identical for both/query modes.
+batch_size = 16

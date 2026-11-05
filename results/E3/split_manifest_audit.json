@@ -1,0 +1,262 @@
+{
+  "manifest_sha256": "ec414bd788251a8dfd2f4444adef9991a49430e3cc890a95183d55fc124b3db5",
+  "source_code_sha256": {
+    "splits.py": "094ef82ef14c17740bf129dfa1b5e6fc5e1b7dc01b878d213c07fc823dff3f0d",
+    "prepare_splits.py": "b068069400ee09c0551e4d5289bc2a0ba27ce1887b585f4877264c0e34ed84d2"
+  },
+  "export_dir": "/gpfs/scratch1/shared/scur0944/csrv2/data_splits/ec414bd788251a8dfd2f4444adef9991a49430e3cc890a95183d55fc124b3db5",
+  "export_sha256": {
+    "ArguAna/train.jsonl": "ace0c834cbac527b080eaa26c4f6e4533cf2454d0b34798cf19ed0ecfdb6ec14",
+    "ArguAna/validation.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "ArguAna/test.jsonl": "657857fcd86a6d12d03c930a9732b67c5429e37d70b1c7369c2a6c3c88e8194b",
+    "NFCorpus/train.jsonl": "5ab52ddc3a7f931cd9cdc10e88f13fb9a78445c0dd8af835905abf31a36c87fe",
+    "NFCorpus/validation.jsonl": "98f1d290d195c8b751d3835e5612e897bded85c7c9d4e09a7ac30759b0a0a213",
+    "NFCorpus/test.jsonl": "22c75285b1f1ff7d7402dbc05dda6062d6837df66e099e0ff75062c00776fd71",
+    "CQADupstackGamingRetrieval/train.jsonl": "3f4f0527d2609154eeb46af0a2a7683af5219576815cb83f57ba52c0c8d18234",
+    "CQADupstackGamingRetrieval/validation.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "CQADupstackGamingRetrieval/test.jsonl": "ec28f1073ffad356bd2efed6c029dc2a8693fd5aeea0d0baafd1744387ef3893",
+    "CQADupstackUnixRetrieval/train.jsonl": "a814d02dd47685d9359d6752df26264d112027a08e0663e86f50a7a7f3434df6",
+    "CQADupstackUnixRetrieval/validation.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "CQADupstackUnixRetrieval/test.jsonl": "7d1afa3f9faa82d5de9e2d05f9d59070767e1433521256a918bbfbc2ce6f2b38",
+    "ClimateFEVERHardNegatives/train.jsonl": "145898ed2147fefea0ac08846681ab696f30a52a946a42fece9ccfb5fba89c5c",
+    "ClimateFEVERHardNegatives/validation.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "ClimateFEVERHardNegatives/test.jsonl": "66d9117032c6c21214edeb5d0568c12917bfd6129dd32b9b11f25f3d1061b309",
+    "FiQA2018/train.jsonl": "225052adecbb4f234360687390a932b47c8d6adbd24539b41e0a147dd6a10c17",
+    "FiQA2018/validation.jsonl": "cf2b0b2e1dcf1e48576edf79f399e8d3bd76eeb46b2baf6881225f0c7461a482",
+    "FiQA2018/test.jsonl": "0170f3a9e1c830db17272c61c4bf8934ee92fd2744caaf4c0f00e8ee60938f12",
+    "SCIDOCS/train.jsonl": "b2f7c82d3ad8c0fa7a694e67157e44e31bd874d47a37a54eafda39a427bd0fdc",
+    "SCIDOCS/validation.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "SCIDOCS/test.jsonl": "1bee1a169f635d3356085f0a77f77a58fc932b168b278e7a40845bf091b5a003",
+    "SciFact/train.jsonl": "29d3d57afafbc7677d37ca8290285da2e6aabd2cc7fb286b0aca4157298c76cb",
+    "SciFact/validation.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "SciFact/test.jsonl": "44bd2fd52b924190bd603275bf15d57f9117099939a0d63af732a2f1fdf6b7ed"
+  },
+  "tasks": {
+    "ArguAna": {
+      "strategy": "fallback",
+      "counts": {
+        "train": {
+          "source_split": "test",
+          "n_queries": 1124,
+          "n_judgments": 1124
+        },
+        "validation": {
+          "source_split": "test",
+          "n_queries": 0,
+          "n_judgments": 0
+        },
+        "test": {
+          "source_split": "test",
+          "n_queries": 282,
+          "n_judgments": 282
+        }
+      },
+      "query_overlap": 0
+    },
+    "NFCorpus": {
+      "strategy": "official",
+      "counts": {
+        "train": {
+          "source_split": "train",
+          "n_queries": 2590,
+          "n_judgments": 110575
+        },
+        "validation": {
+          "source_split": "dev",
+          "n_queries": 324,
+          "n_judgments": 11385
+        },
+        "test": {
+          "source_split": "test",
+          "n_queries": 323,
+          "n_judgments": 12334
+        }
+      },
+      "query_overlap": 0
+    },
+    "CQADupstackGamingRetrieval": {
+      "strategy": "fallback",
+      "counts": {
+        "train": {
+          "source_split": "test",
+          "n_queries": 1276,
+          "n_judgments": 1828
+        },
+        "validation": {
+          "source_split": "test",
+          "n_queries": 0,
+          "n_judgments": 0
+        },
+        "test": {
+          "source_split": "test",
+          "n_queries": 319,
+          "n_judgments": 435
+        }
+      },
+      "query_overlap": 0
+    },
+    "CQADupstackUnixRetrieval": {
+      "strategy": "fallback",
+      "counts": {
+        "train": {
+          "source_split": "test",
+          "n_queries": 857,
+          "n_judgments": 1321
+        },
+        "validation": {
+          "source_split": "test",
+          "n_queries": 0,
+          "n_judgments": 0
+        },
+        "test": {
+          "source_split": "test",
+          "n_queries": 215,
+          "n_judgments": 372
+        }
+      },
+      "query_overlap": 0
+    },
+    "ClimateFEVERHardNegatives": {
+      "strategy": "fallback",
+      "counts": {
+        "train": {
+          "source_split": "test",
+          "n_queries": 800,
+          "n_judgments": 2437
+        },
+        "validation": {
+          "source_split": "test",
+          "n_queries": 0,
+          "n_judgments": 0
+        },
+        "test": {
+          "source_split": "test",
+          "n_queries": 200,
+          "n_judgments": 611
+        }
+      },
+      "query_overlap": 0
+    },
+    "FiQA2018": {
+      "strategy": "official",
+      "counts": {
+        "train": {
+          "source_split": "train",
+          "n_queries": 5500,
+          "n_judgments": 14166
+        },
+        "validation": {
+          "source_split": "dev",
+          "n_queries": 500,
+          "n_judgments": 1238
+        },
+        "test": {
+          "source_split": "test",
+          "n_queries": 648,
+          "n_judgments": 1706
+        }
+      },
+      "query_overlap": 0
+    },
+    "SCIDOCS": {
+      "strategy": "fallback",
+      "counts": {
+        "train": {
+          "source_split": "test",
+          "n_queries": 800,
+          "n_judgments": 23942
+        },
+        "validation": {
+          "source_split": "test",
+          "n_queries": 0,
+          "n_judgments": 0
+        },
+        "test": {
+          "source_split": "test",
+          "n_queries": 200,
+          "n_judgments": 5986
+        }
+      },
+      "query_overlap": 0
+    },
+    "SciFact": {
+      "strategy": "official",
+      "counts": {
+        "train": {
+          "source_split": "train",
+          "n_queries": 809,
+          "n_judgments": 919
+        },
+        "validation": {
+          "source_split": "train",
+          "n_queries": 0,
+          "n_judgments": 0
+        },
+        "test": {
+          "source_split": "test",
+          "n_queries": 300,
+          "n_judgments": 339
+        }
+      },
+      "query_overlap": 0
+    }
+  },
+  "provenance": {
+    "timestamp_utc": "2026-11-04T14:13:35+00:00",
+    "git_commit": "de8a1d2d36261082964ee0fa4f4e87e5d2d86da8",
+    "git_dirty": true,
+    "upstream_commit": "3b2d4d27ec1f9d70af943806ece8dfd665b8d28b",
+    "slurm_job_id": null,
+    "host": "int5.local.snellius.surf.nl",
+    "gpu": null,
+    "python": "3.11.18",
+    "packages": {
+      "torch": "2.7.0",
+      "transformers": "4.55.0",
+      "sentence-transformers": "5.0.0",
+      "mteb": "1.38.39",
+      "peft": "0.15.2"
+    },
+    "config": {
+      "exp_id": "E3",
+      "run_name": "query_heldout_v1",
+      "seed": 42,
+      "test_fraction": 0.2,
+      "validation_fraction": 0.0,
+      "sources": {
+        "ArguAna": {
+          "path": "mteb/arguana",
+          "revision": "c22ab2a51041ffd869aaddef7af8d8215647e41a"
+        },
+        "NFCorpus": {
+          "path": "mteb/nfcorpus",
+          "revision": "ec0fa4fe99da2ff19ca1214b7966684033a58814"
+        },
+        "CQADupstackGamingRetrieval": {
+          "path": "mteb/cqadupstack-gaming",
+          "revision": "4885aa143210c98657558c04aaf3dc47cfb54340"
+        },
+        "CQADupstackUnixRetrieval": {
+          "path": "mteb/cqadupstack-unix",
+          "revision": "6c6430d3a6d36f8d2a829195bc5dc94d7e063e53"
+        },
+        "ClimateFEVERHardNegatives": {
+          "path": "mteb/ClimateFEVER_test_top_250_only_w_correct-v2",
+          "revision": "3a309e201f3c2c4b13bd4a367a8f37eee2ec1d21"
+        },
+        "FiQA2018": {
+          "path": "mteb/fiqa",
+          "revision": "27a168819829fe9bcd655c2df245fb19452e8e06"
+        },
+        "SCIDOCS": {
+          "path": "mteb/scidocs",
+          "revision": "f8c2fcf00f625baaa80f62ec5bd9e1fff3b8ae88"
+        },
+        "SciFact": {
+          "path": "mteb/scifact",
+          "revision": "0228b52cf27578f30900b9e5271d331663a030d7"
+        }
+      }
+    }
+  }
+}
