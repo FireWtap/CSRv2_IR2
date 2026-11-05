@@ -1,0 +1,168 @@
+{
+  "exp_id": "E3",
+  "run_name": "missing_queries_fp32",
+  "manifest_sha256": "ec414bd788251a8dfd2f4444adef9991a49430e3cc890a95183d55fc124b3db5",
+  "prepared_path": "/gpfs/scratch1/shared/scur0944/csrv2/training_queries/ec414bd788251a8dfd2f4444adef9991a49430e3cc890a95183d55fc124b3db5/missing_queries_fp32/prepared-c461d1574849367101e1f5e6b89e8c7f9cf2ff0363b3773fbd36df2c0ec2348d.json",
+  "prepared_sha256": "c461d1574849367101e1f5e6b89e8c7f9cf2ff0363b3773fbd36df2c0ec2348d",
+  "source_code_sha256": {
+    "e3_missing_queries.py": "3e7c466b74c40fdfb5077c25730f95219b61ed31d1cb30afbcacb2cb28c23581",
+    "e1_dense_backbone.py": "58f9d449d0dc83254a42845465bc2b33019a39302c53d847c2ee557afe7001b9",
+    "encoders.py": "d469338577c2b2e2e21665badeafc81525257005ce18d616a886cb7c5d261f01",
+    "splits.py": "dfcff404f7ed00bfc7fb95a8a10f36c5c03824b41b3eb6ba0cfe005e08523f1e"
+  },
+  "provenance": {
+    "timestamp_utc": "2026-11-05T13:34:56+00:00",
+    "git_commit": "07fd2e4763b5348c045af719642db94d50f00b63",
+    "git_dirty": false,
+    "upstream_commit": "3b2d4d27ec1f9d70af943806ece8dfd665b8d28b",
+    "slurm_job_id": "28920839",
+    "host": "gcn67.local.snellius.surf.nl",
+    "gpu": "NVIDIA A100-SXM4-40GB",
+    "python": "3.11.18",
+    "packages": {
+      "torch": "2.7.0",
+      "transformers": "4.55.0",
+      "sentence-transformers": "5.0.0",
+      "mteb": "1.38.39",
+      "peft": "0.15.2"
+    },
+    "config": {
+      "exp_id": "E3",
+      "run_name": "missing_queries_fp32",
+      "dense_config": "configs/E1_dense_both.toml",
+      "dtype": "float32",
+      "split_manifest": "results/E3/split_manifest.json",
+      "tasks": [
+        "NFCorpus",
+        "FiQA2018",
+        "SciFact"
+      ],
+      "partitions": [
+        "train",
+        "validation"
+      ],
+      "batch_size": 16,
+      "resolved_dense_config": {
+        "exp_id": "E1",
+        "run_name": "qwen3_4b_dense_prompt_both_fp32",
+        "model": "Qwen/Qwen3-Embedding-4B",
+        "revision": "5cf2132abc99cad020ac570b19d031efec650f2b",
+        "max_seq_length": 512,
+        "batch_size": 16,
+        "prompt_mode": "both",
+        "paper_target_mean": 58.37,
+        "dtype": "float32"
+      }
+    }
+  },
+  "partitions": [
+    {
+      "task": "NFCorpus",
+      "partition": "train",
+      "n_queries": 2590,
+      "texts_sha256": "27131cd9e7d44e5ed633bb8a63cc9d3c4abd96c7fadebff5b3191f8f2a7f3154",
+      "manifest_sha256": "ec414bd788251a8dfd2f4444adef9991a49430e3cc890a95183d55fc124b3db5",
+      "prepared_sha256": "c461d1574849367101e1f5e6b89e8c7f9cf2ff0363b3773fbd36df2c0ec2348d",
+      "model_tag": "Qwen/Qwen3-Embedding-4B|5cf2132abc99cad020ac570b19d031efec650f2b|float32|512|left",
+      "prompt_sha256": "02e26f7fe1a6b3ebd0a1c1a130a5f30b2ae6670a03b6eae549c98362c24fc17c",
+      "embedding_path": "/gpfs/scratch1/shared/scur0933/csrv2/emb_cache/qwen3_4b_dense_prompt_both_fp32/NFCorpus/query-2590-9015ae05a8b58820.npy",
+      "embedding_sha256": "9e4dbc1ee3ba2aaa95f593a1dd185a87ae7adbda9321f4d5ed43eec7cfe9813d",
+      "shape": [
+        2590,
+        2560
+      ],
+      "dtype": "float32",
+      "index_path": "/gpfs/scratch1/shared/scur0944/csrv2/training_queries/ec414bd788251a8dfd2f4444adef9991a49430e3cc890a95183d55fc124b3db5/missing_queries_fp32/NFCorpus/train.json",
+      "cache_hit": false,
+      "status": "complete"
+    },
+    {
+      "task": "NFCorpus",
+      "partition": "validation",
+      "n_queries": 324,
+      "texts_sha256": "d985c34fd655725884d0c332979899c5699a4de117f4d8236ac5cd12d8462116",
+      "manifest_sha256": "ec414bd788251a8dfd2f4444adef9991a49430e3cc890a95183d55fc124b3db5",
+      "prepared_sha256": "c461d1574849367101e1f5e6b89e8c7f9cf2ff0363b3773fbd36df2c0ec2348d",
+      "model_tag": "Qwen/Qwen3-Embedding-4B|5cf2132abc99cad020ac570b19d031efec650f2b|float32|512|left",
+      "prompt_sha256": "02e26f7fe1a6b3ebd0a1c1a130a5f30b2ae6670a03b6eae549c98362c24fc17c",
+      "embedding_path": "/gpfs/scratch1/shared/scur0933/csrv2/emb_cache/qwen3_4b_dense_prompt_both_fp32/NFCorpus/query-324-4f42ad40d3d86da9.npy",
+      "embedding_sha256": "c2397cb14e296091f676f77175f100aafdb3682c6bae0843aa02833abad8f916",
+      "shape": [
+        324,
+        2560
+      ],
+      "dtype": "float32",
+      "index_path": "/gpfs/scratch1/shared/scur0944/csrv2/training_queries/ec414bd788251a8dfd2f4444adef9991a49430e3cc890a95183d55fc124b3db5/missing_queries_fp32/NFCorpus/validation.json",
+      "cache_hit": false,
+      "status": "complete"
+    },
+    {
+      "task": "FiQA2018",
+      "partition": "train",
+      "n_queries": 5500,
+      "texts_sha256": "783ba10a786d6cf606de711dda3a82d6c5be1b88416d4b924cff18141db7e372",
+      "manifest_sha256": "ec414bd788251a8dfd2f4444adef9991a49430e3cc890a95183d55fc124b3db5",
+      "prepared_sha256": "c461d1574849367101e1f5e6b89e8c7f9cf2ff0363b3773fbd36df2c0ec2348d",
+      "model_tag": "Qwen/Qwen3-Embedding-4B|5cf2132abc99cad020ac570b19d031efec650f2b|float32|512|left",
+      "prompt_sha256": "cf4921f334b8110e125a6d30d90c55b24e7a20ff06356bcf01635fa9700225dc",
+      "embedding_path": "/gpfs/scratch1/shared/scur0933/csrv2/emb_cache/qwen3_4b_dense_prompt_both_fp32/FiQA2018/query-5500-f7e3ca7c3a4b3fc9.npy",
+      "embedding_sha256": "d4f95088c6ec07f552561545b2f3e629a285db772417fdbd653c4c730e6fd628",
+      "shape": [
+        5500,
+        2560
+      ],
+      "dtype": "float32",
+      "index_path": "/gpfs/scratch1/shared/scur0944/csrv2/training_queries/ec414bd788251a8dfd2f4444adef9991a49430e3cc890a95183d55fc124b3db5/missing_queries_fp32/FiQA2018/train.json",
+      "cache_hit": false,
+      "status": "complete"
+    },
+    {
+      "task": "FiQA2018",
+      "partition": "validation",
+      "n_queries": 500,
+      "texts_sha256": "08fd276ec93529783e0102d4fab9fc484584677c379290ac9d923cdc74912e40",
+      "manifest_sha256": "ec414bd788251a8dfd2f4444adef9991a49430e3cc890a95183d55fc124b3db5",
+      "prepared_sha256": "c461d1574849367101e1f5e6b89e8c7f9cf2ff0363b3773fbd36df2c0ec2348d",
+      "model_tag": "Qwen/Qwen3-Embedding-4B|5cf2132abc99cad020ac570b19d031efec650f2b|float32|512|left",
+      "prompt_sha256": "cf4921f334b8110e125a6d30d90c55b24e7a20ff06356bcf01635fa9700225dc",
+      "embedding_path": "/gpfs/scratch1/shared/scur0933/csrv2/emb_cache/qwen3_4b_dense_prompt_both_fp32/FiQA2018/query-500-03f8623125eb2283.npy",
+      "embedding_sha256": "00432fa77b7deaad2241a47fbc56e4526ee97515e3ea4621d4a8057c002cedbf",
+      "shape": [
+        500,
+        2560
+      ],
+      "dtype": "float32",
+      "index_path": "/gpfs/scratch1/shared/scur0944/csrv2/training_queries/ec414bd788251a8dfd2f4444adef9991a49430e3cc890a95183d55fc124b3db5/missing_queries_fp32/FiQA2018/validation.json",
+      "cache_hit": false,
+      "status": "complete"
+    },
+    {
+      "task": "SciFact",
+      "partition": "train",
+      "n_queries": 809,
+      "texts_sha256": "2898a104d71035c1da03525a115d2f93316a82c80e4816bed1b2df306ceada3d",
+      "manifest_sha256": "ec414bd788251a8dfd2f4444adef9991a49430e3cc890a95183d55fc124b3db5",
+      "prepared_sha256": "c461d1574849367101e1f5e6b89e8c7f9cf2ff0363b3773fbd36df2c0ec2348d",
+      "model_tag": "Qwen/Qwen3-Embedding-4B|5cf2132abc99cad020ac570b19d031efec650f2b|float32|512|left",
+      "prompt_sha256": "5cc4baba63ab7152d69aa6afa34e43a4d43742babece46216f4aaf86b9ba0f7d",
+      "embedding_path": "/gpfs/scratch1/shared/scur0933/csrv2/emb_cache/qwen3_4b_dense_prompt_both_fp32/SciFact/query-809-3f7f2655bc2d42ee.npy",
+      "embedding_sha256": "365388ca023fd95bfc1bd980df47eece1ff7cdabc2c667133583efd6e481d3a3",
+      "shape": [
+        809,
+        2560
+      ],
+      "dtype": "float32",
+      "index_path": "/gpfs/scratch1/shared/scur0944/csrv2/training_queries/ec414bd788251a8dfd2f4444adef9991a49430e3cc890a95183d55fc124b3db5/missing_queries_fp32/SciFact/train.json",
+      "cache_hit": false,
+      "status": "complete"
+    },
+    {
+      "task": "SciFact",
+      "partition": "validation",
+      "n_queries": 0,
+      "status": "empty"
+    }
+  ],
+  "status": "complete",
+  "n_queries": 9723
+}
