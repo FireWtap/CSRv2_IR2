@@ -62,3 +62,15 @@ left padding, max length 512, batch 16 and upstream task instructions on queries
 identical for E1 both/query modes; encode once, preserve ordered IDs and D-007 manifest provenance.
 This completes data extraction for the existing fp32 protocol; it does not settle the broader
 D-004/D-005 sensitivity comparisons or authorize training. Status: active.
+
+## D-009 (2026-11-05, Samu / codex) E3 indexed training pool and many-to-many supervision
+Complete the user-authorized dataset builder using D-007 query partitions and the existing D-008
+dense fp32 cache. The reconstruction pool contains each selected query once and every corpus document
+once per task (explicitly transductive). Validation/test queries are absent from the training view;
+only training qrels create its supervision. Preserve original grades, with grade > 0 defining positive
+query-group membership. A document keeps all its positive query groups; do not overwrite one scalar
+label or merge groups transitively. Collation marks distinct items sharing a positive query group;
+unjudged/zero-grade relations create no positive membership. Group IDs include the task namespace.
+Match the actual MTEB 1.38.39 corpus order (descending string IDs, 50000-row chunks), despite its
+misleading length-sort log message. Verify pinned text/model/prompt cache keys and array checksums
+before reuse. Epoch sampling and SAE loss implementation remain E4/E5 work. Status: active.

@@ -1,0 +1,8 @@
+exp_id = "E3"
+run_name = "training_data_fp32"
+dense_config = "configs/E1_dense_both.toml"
+dtype = "float32"
+split_manifest = "results/E3/split_manifest.json"
+embedding_dim = 2560
+corpus_chunk_size = 50000 # MTEB 1.38.39 DenseRetrievalExactSearch default
+tasks = ["ArguAna", "NFCorpus", "CQADupstackGamingRetrieval", "CQADupstackUnixRetrieval", "ClimateFEVERHardNegatives", "FiQA2018", "SCIDOCS", "SciFact"]
