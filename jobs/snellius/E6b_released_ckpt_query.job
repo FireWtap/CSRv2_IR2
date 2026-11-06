@@ -1,0 +1,18 @@
+#!/bin/bash
+# E6b query-only prompt check: released CSRv2-retrieval ckpt, ClimateFEVERHardNegatives + FiQA2018, all k, fp32.
+# Queries hit the cache of the E6b "both" run; only the ~105k raw docs need a backbone pass (~0.18 s/doc fp32).
+#   sbatch jobs/snellius/E6b_released_ckpt_query.job
+#SBATCH --job-name=e6b_query
+#SBATCH --partition=gpu_a100
+#SBATCH --gpus-per-node=1
+#SBATCH --cpus-per-task=18
+#SBATCH --time=10:00:00
+#SBATCH --output=outputs/slurm/%x-%j.out
+
+set -euo pipefail
+cd "$SLURM_SUBMIT_DIR"
+source jobs/snellius/env.sh
+echo "commit $(git rev-parse --short HEAD) | upstream $(git -C third_party/CSRv2 rev-parse --short HEAD) | node $(hostname)"
+nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
+uv run --frozen python -m csrv2_repro.e0_released_ckpt --config configs/E6b_released_ckpt_query.toml
+echo "=== done ($(date +%T))"

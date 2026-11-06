@@ -58,6 +58,13 @@ def main() -> None:
     batch_size = cfg.get("batch_size", 2)
     out_dir = RESULTS / cfg["exp_id"] / cfg["run_name"]
     cache_root = Path(os.environ.get("SCRATCH_ROOT", OUTPUTS)) / "emb_cache"
+    # "both" = upstream eval_all() (prompt on queries and docs); "query" = Qwen3 protocol (D-004).
+    prompt_mode = cfg.get("prompt_mode", "both")
+    if prompt_mode != "both" and faithful_ks:
+        raise ValueError("faithful path uses SparseEncoder.prompts on both sides; needs prompt_mode=both")
+    # Cache files are keyed by content hash (model, prompt, texts), so runs may share a cache dir:
+    # e.g. query-only reuses the prompted query embeddings of the "both" run.
+    cache_dir = cache_root / cfg.get("cache_name", cfg["run_name"])
 
     from sentence_transformers import SentenceTransformer, SparseEncoder
     from sentence_transformers.sparse_encoder.models import SparseAutoEncoder
@@ -83,8 +90,8 @@ def main() -> None:
             str(x) for x in (cfg["model"], cfg.get("revision"), dtype, model.max_seq_length, "left")
         ),
         prompts=upstream_prompts(),
-        prompt_mode="both",
-        cache_dir=cache_root / cfg["run_name"],
+        prompt_mode=prompt_mode,
+        cache_dir=cache_dir,
         batch_size=batch_size,
         meta_name=f"csrv2-repro/{cfg['run_name']}",
     )
@@ -97,7 +104,8 @@ def main() -> None:
         "faithful_per_k": {},
         "faithful_minus_cached": {},
         "paper_target_mean_by_k": cfg.get("paper_target_mean_by_k"),
-        "embedding_cache": str(cache_root / cfg["run_name"]),
+        "prompt_mode": prompt_mode,
+        "embedding_cache": str(cache_dir),
     }
     for k in ks:
         encoder.transform = sae_topk_transform(sae, k)
