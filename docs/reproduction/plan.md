@@ -17,6 +17,7 @@ k grid: {2, 4, 16, 64, 2560} (Table 3); ablation adds {8, 32}. Each experiment i
 | E6b | Released `CSRv2-retrieval` ckpt, all 8 tasks x all k                  | Tab.3 CSRv2      | E0         | done (results/E6b, fp32) |
 | E7  | Retrieval time, 1M-doc DB, relative to CSRv2@k=2                       | Tab.2 time col   | E2, E5/E6  | todo    |
 | E8  | Ablation: CSR, +anneal, +supervise, CSRv2-linear, CSRv2 x k grid      | Tab.4 (ported)   | E4-E6      | optional|
+| E9  | Other 5 task types (classif., clust., STS, pair, rerank): dense, MRL, released CSRv2-<type> ckpts, all k (D-008) | Tab.3 other cols | E1, E6b | in progress |
 
 Order of attack: E0 + E1p first (cheapest end-to-end signal that our eval matches theirs), then E1/E2
 (no training), then E3 -> E4/E5, then E6, then E7/E8. E6b gives an upper bound for E6 if our

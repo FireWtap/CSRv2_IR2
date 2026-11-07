@@ -1,0 +1,22 @@
+#!/bin/bash
+# E9 MRL for one non-retrieval Table 3 task type (D-008): truncate the E9 dense cache to k and score.
+# No encoding (--cache-only, backbone stays on CPU), so a MIG slice is enough. Submit after E9_pass PART=dense:
+#   sbatch --dependency=afterok:<dense jobid> --export=ALL,TASK_TYPE=sts jobs/snellius/E9_mrl.job
+#SBATCH --job-name=e9_mrl
+#SBATCH --partition=gpu_mig
+#SBATCH --gpus-per-node=1
+#SBATCH --cpus-per-task=9
+#SBATCH --mem=60G
+#SBATCH --time=12:00:00
+#SBATCH --output=outputs/slurm/%x-%j.out
+
+set -euo pipefail
+: "${TASK_TYPE:?TASK_TYPE not set}"
+cd "$SLURM_SUBMIT_DIR"
+source jobs/snellius/env.sh
+# Datasets and ckpts are pre-downloaded on the login node (scripts/prefetch_E9.py): parallel jobs hitting the
+# HF API anonymously get rate-limited (429), so run offline.
+export HF_HUB_OFFLINE=1 HF_DATASETS_OFFLINE=1
+echo "commit $(git rev-parse --short HEAD) | upstream $(git -C third_party/CSRv2 rev-parse --short HEAD) | node $(hostname) | type $TASK_TYPE"
+uv run --frozen python -m csrv2_repro.e2_mrl --config configs/E9_mrl.toml --task-type "$TASK_TYPE" --cache-only
+echo "=== done ($(date +%T))"

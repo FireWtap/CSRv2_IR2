@@ -20,6 +20,23 @@ FiQA2018 (`fiqa`), SCIDOCS (`scidocs`), SciFact (`scifact`). Test splits, Englis
 Claim under test: CSRv2 > CSRv2-linear > CSR > MRL at equal k, gap largest at k<=4;
 "CSRv2 at k=16 rivals MRL at k=64, CSRv2 at k=2 rivals MRL at k=16" (all-task average; check for retrieval).
 
+## PRIMARY (D-008) — Table 3, other task types, Backbone / MRL / CSRv2 rows (E9)
+Metrics: Classif. accuracy, Clust. V-measure, STS cosine Spearman, PairClassifi. cosine AP, Rerank. MAP (all x100).
+Task lists: `src/csrv2_repro/common.py` TASK_TYPES (10 / 8 / 10 / 2 / 3 tasks). Same numbers are in configs/E9_*.toml.
+| k    | Method   | Classif. | Clust. | STS   | PairCl. | Rerank. |
+|------|----------|----------|--------|-------|---------|---------|
+| 2560 | Backbone | 85.79    | 55.27  | 88.63 | 91.42   | 72.03   |
+| 2560 | MRL      | 85.38    | 55.04  | 88.02 | 91.27   | 71.64   |
+| 2560 | CSRv2    | 85.58    | 55.91  | 88.47 | 91.39   | 71.98   |
+| 64   | MRL      | 83.42    | 53.73  | 86.60 | 88.08   | 69.61   |
+| 64   | CSRv2    | 84.28    | 54.57  | 86.32 | 90.90   | 71.64   |
+| 16   | MRL      | 75.22    | 47.24  | 79.21 | 73.29   | 60.82   |
+| 16   | CSRv2    | 82.03    | 53.86  | 82.63 | 90.42   | 69.89   |
+| 4    | MRL      | 48.27    | 32.08  | 53.11 | 30.73   | 40.59   |
+| 4    | CSRv2    | 80.20    | 48.27  | 77.94 | 82.28   | 62.98   |
+| 2    | MRL      | 26.47    | 24.20  | 30.22 | 18.46   | 32.43   |
+| 2    | CSRv2    | 76.22    | 46.02  | 74.88 | 75.24   | 59.52   |
+
 ## SECONDARY — Table 2 (e5-Mistral-7B; we port to Qwen3-4B, see ledger D-001)
 Retrieval nDCG@10 and retrieval time relative to CSRv2@k=2 (1M-doc database built from all
 retrieval + reranking corpora; queries = all retrieval + reranking queries; App. B.1).

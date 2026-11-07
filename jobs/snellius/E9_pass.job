@@ -1,0 +1,29 @@
+#!/bin/bash
+# E9 backbone pass for one non-retrieval Table 3 task type (ledger D-008), fp32, full A100:
+#   PART=dense  -> E9 dense Qwen3-4B (Table 3 Backbone row); fills the cache E9_mrl.job scores from
+#   PART=csrv2  -> released CSRv2-<type> ckpt, all k (Table 3 CSRv2 row, D-006)
+#   sbatch --export=ALL,PART=dense,TASK_TYPE=sts jobs/snellius/E9_pass.job   (or use scripts/submit_E9.sh)
+# Resumable: embedding caches and finished mteb tasks are reused on resubmission.
+#SBATCH --job-name=e9_pass
+#SBATCH --partition=gpu_a100
+#SBATCH --gpus-per-node=1
+#SBATCH --cpus-per-task=18
+#SBATCH --time=16:00:00
+#SBATCH --output=outputs/slurm/%x-%j.out
+
+set -euo pipefail
+: "${PART:?PART not set (dense|csrv2)}"; : "${TASK_TYPE:?TASK_TYPE not set}"
+case "$PART" in dense|csrv2) ;; *) echo "PART must be dense|csrv2" >&2; exit 2;; esac
+cd "$SLURM_SUBMIT_DIR"
+source jobs/snellius/env.sh
+# Datasets and ckpts are pre-downloaded on the login node (scripts/prefetch_E9.py): parallel jobs hitting the
+# HF API anonymously get rate-limited (429), so run offline.
+export HF_HUB_OFFLINE=1 HF_DATASETS_OFFLINE=1
+echo "commit $(git rev-parse --short HEAD) | upstream $(git -C third_party/CSRv2 rev-parse --short HEAD) | node $(hostname) | part $PART | type $TASK_TYPE"
+nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
+if [[ $PART == dense ]]; then
+  uv run --frozen python -m csrv2_repro.e1_dense_backbone --config configs/E9_dense.toml --task-type "$TASK_TYPE"
+else
+  uv run --frozen python -m csrv2_repro.e0_released_ckpt --config configs/E9_csrv2_released.toml --task-type "$TASK_TYPE"
+fi
+echo "=== done ($(date +%T))"
