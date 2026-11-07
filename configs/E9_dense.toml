@@ -1,0 +1,18 @@
+# E9: dense Qwen3-Embedding-4B on the five non-retrieval Table 3 task types (ledger D-008). Same model, dtype,
+# padding and prompt protocol as E1 query-only (D-004, D-007); pass --task-type, run_name gets a _<type> suffix
+# and each type gets its own embedding cache. Retrieval stays in E1.
+exp_id = "E9"
+run_name = "qwen3_4b_dense_fp32"
+model = "Qwen/Qwen3-Embedding-4B"
+revision = "5cf2132abc99cad020ac570b19d031efec650f2b"
+dtype = "float32"          # D-007
+max_seq_length = 512
+batch_size = 16
+prompt_mode = "query"      # symmetric tasks: instruction on every text; reranking: queries only
+
+[paper_target_mean]        # Table 3, Qwen3-Embed-4B row
+classification = 85.79
+clustering = 55.27
+sts = 88.63
+pair_classification = 91.42
+reranking = 72.03
