@@ -4,6 +4,7 @@
 #   PART=csrv2  -> released CSRv2-<type> ckpt, all k (Table 3 CSRv2 row, D-006)
 #   sbatch --export=ALL,PART=dense,TASK_TYPE=sts jobs/snellius/E9_pass.job   (or use scripts/submit_E9.sh)
 # Resumable: embedding caches and finished mteb tasks are reused on resubmission.
+# EXTRA_ARGS (e.g. --overwrite) is appended to the python command; --overwrite re-scores finished tasks.
 #SBATCH --job-name=e9_pass
 #SBATCH --partition=gpu_a100
 #SBATCH --gpus-per-node=1
@@ -22,8 +23,8 @@ export HF_HUB_OFFLINE=1 HF_DATASETS_OFFLINE=1
 echo "commit $(git rev-parse --short HEAD) | upstream $(git -C third_party/CSRv2 rev-parse --short HEAD) | node $(hostname) | part $PART | type $TASK_TYPE"
 nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
 if [[ $PART == dense ]]; then
-  uv run --frozen python -m csrv2_repro.e1_dense_backbone --config configs/E9_dense.toml --task-type "$TASK_TYPE"
+  uv run --frozen python -m csrv2_repro.e1_dense_backbone --config configs/E9_dense.toml --task-type "$TASK_TYPE" ${EXTRA_ARGS:-}
 else
-  uv run --frozen python -m csrv2_repro.e0_released_ckpt --config configs/E9_csrv2_released.toml --task-type "$TASK_TYPE"
+  uv run --frozen python -m csrv2_repro.e0_released_ckpt --config configs/E9_csrv2_released.toml --task-type "$TASK_TYPE" ${EXTRA_ARGS:-}
 fi
 echo "=== done ($(date +%T))"
