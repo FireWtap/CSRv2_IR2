@@ -34,3 +34,6 @@ Read with `tail -n 30 ledger/log.md`, search with `grep -n "E4" ledger/log.md`.
 2026-11-05 | francesco/claude | infra | NOTE | scratch shared with scur0944 via ACLs (emb_cache, hf, predictions under /scratch-shared/scur0933/csrv2); scur0944 must run the symlink setup once | docs/reproduction/shared_scratch.md
 2026-11-06 | francesco/claude | E6b | NOTE | query-only prompt check of released ckpt (ClimateFEVER+FiQA, all k, fp32) submitted; tests prompt hypothesis of 2026-11-05 | slurm 28942221
 2026-11-07 | francesco/claude | E9 | NOTE | submitted: per type dense/csrv2 on gpu_a100 + MRL on gpu_mig (afterok dense); jobs 28967010-28967025, ids in scripts/submit_E9.sh output order (classif, clust, sts, pair, rerank) | commit 3e7e7ea
+2026-11-08 | francesco/claude | E9 | BUG | 5 csrv2 jobs failed offline: ST drops revision for PEFT ckpts, repo lookup needs refs/main (absent after pinned prefetch); fix: load from resolved snapshot path | commit e7afdb9
+2026-11-08 | francesco/claude | E9 | BUG | MRL pair_classification cache miss: mteb dedups via list(set()), order varies with hash seed; fix: PYTHONHASHSEED=0 in env.sh | commit e7afdb9
+2026-11-08 | francesco/claude | E9 | NOTE | resubmitted csrv2 x5 (28994384-87, 28994389) + dense/MRL pair_classification (28994388, 28994390) | commit e7afdb9
