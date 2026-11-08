@@ -9,5 +9,7 @@ export UV_CACHE_DIR="$SCRATCH_ROOT/uv-cache"
 export WANDB_DIR="$SCRATCH_ROOT/wandb"
 export WANDB_MODE="${WANDB_MODE:-offline}"
 export TOKENIZERS_PARALLELISM=false
+# mteb dedups texts with list(set(...)); a fixed seed keeps that order, and so our embedding-cache keys, stable across jobs.
+export PYTHONHASHSEED=0
 mkdir -p "$HF_HOME" "$UV_CACHE_DIR" "$WANDB_DIR"
 export PATH="$HOME/.local/bin:$PATH"

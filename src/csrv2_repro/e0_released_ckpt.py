@@ -79,9 +79,17 @@ def main() -> None:
     from sentence_transformers import SentenceTransformer, SparseEncoder
     from sentence_transformers.sparse_encoder.models import SparseAutoEncoder
 
-    model = SparseEncoder(
+    # Load from the resolved local snapshot, not the repo id: ST drops `revision` for PEFT checkpoints, so
+    # offline it looks the repo up by refs/main, which a revision-pinned prefetch never writes (E9 BUG).
+    from huggingface_hub import snapshot_download
+
+    model_path = snapshot_download(
         cfg["model"],
         revision=cfg.get("revision"),
+        local_files_only=os.environ.get("HF_HUB_OFFLINE", "0") not in ("0", "", "false"),
+    )
+    model = SparseEncoder(
+        model_path,
         device="cuda" if torch.cuda.is_available() else None,
         model_kwargs={"torch_dtype": getattr(torch, dtype)},
         tokenizer_kwargs={"padding_side": "left"},
