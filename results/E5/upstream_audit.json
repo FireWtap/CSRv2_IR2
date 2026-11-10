@@ -1,0 +1,90 @@
+{
+  "provenance": {
+    "timestamp_utc": "2026-11-10T15:10:18+00:00",
+    "git_commit": "7f2fbf726c7bad6b4941c4616702efa921dfe3ae",
+    "git_dirty": false,
+    "upstream_commit": "3b2d4d27ec1f9d70af943806ece8dfd665b8d28b",
+    "slurm_job_id": null,
+    "host": "int4.local.snellius.surf.nl",
+    "gpu": null,
+    "python": "3.11.18",
+    "packages": {
+      "torch": "2.7.0",
+      "transformers": "4.55.0",
+      "sentence-transformers": "5.0.0",
+      "mteb": "1.38.39",
+      "peft": "0.15.2"
+    },
+    "config": {
+      "purpose": "CPU correctness check, not paper training or retrieval evaluation",
+      "dataset": "/gpfs/scratch1/shared/scur0944/csrv2/training_data/training_data_fp32/5cc3c3efd1a81ab343137e5832cd9763bc9f3ff2bf66b7586f01a66edc43f87e/dataset.json",
+      "seed": 1227,
+      "n_inputs": 2560,
+      "n_latents": 128,
+      "topk": 2,
+      "auxk": 16,
+      "dead_threshold": 30,
+      "steps": 1,
+      "batch_size": 4,
+      "lr": 2e-05,
+      "weight_decay": 0.0001,
+      "aux_coefficient": 0.1,
+      "cl_coefficient": 1.0,
+      "loss_protocol": "printed_equations_D-011"
+    }
+  },
+  "source_sha256": {
+    "third_party/CSRv2/text/model_zoo.py": "59d9575431f566f034391042665de4d702345f7c82bcd5fce428e071d241ac20",
+    "third_party/CSRv2/text/CSR_training.py": "c220bb948b5e27773a44659952bdb8a76bf81ff4f45ebb92892c4b86b076ea9d",
+    "third_party/CSRv2/text/utils.py": "de4e4ae6f835afc6ba52487cf965c4684174dfdad6293dd646abc32df32bcc35",
+    "src/csrv2_repro/upstream_sae.py": "f47038501ee02759e24395a51223740350c9fc293fa8d6102e10eeebd7a54025",
+    "tests/test_upstream_sae.py": "d23f7ef8501a994a09dbd3a6eb1609f4ed575eb17d90aab854f7a7eee308a934",
+    "scripts/audit_sae.py": "94abf51385a20a7ac88b8a3d7706ff06ebc02fd3b09214c161f93e7c2a1d8d32",
+    "docs/paper/latex_src/main.tex": "fa483ac9c0db83f2cd42d31d4e8888dd2c2a57fe3fc873fe6ba15619c3eed949"
+  },
+  "dataset_sha256": "9a35f1f0336e1c7f7dbcdf4e426cfa608b8392f8ad4f9cf7578d7d32436ae332",
+  "manifest_sha256": "ec414bd788251a8dfd2f4444adef9991a49430e3cc890a95183d55fc124b3db5",
+  "original_loaded_labels": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "original_broken_supervised_loss": -0.0,
+  "original_broken_supervised_gradient_norm": 0.0,
+  "correct_labels_original_loss": 0.0262459684163332,
+  "printed_equation_loss_same_vectors": 1.0986123085021973,
+  "real_cached_batch_keys": [
+    [
+      "ArguAna",
+      "query",
+      "test-culture-ahrtsdlgra-con01a"
+    ],
+    [
+      "ArguAna",
+      "document",
+      "test-culture-ahrtsdlgra-con01b"
+    ],
+    [
+      "NFCorpus",
+      "query",
+      "PLAIN-10"
+    ],
+    [
+      "NFCorpus",
+      "document",
+      "MED-2494"
+    ]
+  ],
+  "real_cached_batch_directed_positive_count": 4,
+  "real_cached_batch_losses": {
+    "reconstruction": 0.0003896223788615316,
+    "reconstruction_4k": 0.00038777958252467215,
+    "auxiliary": 0.0003896223788615316,
+    "supervised": 1.098381757736206,
+    "total": 1.0988588333129883
+  },
+  "real_cached_batch_supervised_gradient_norm": 0.016691047698259354,
+  "real_cached_batch_encoder_update_norm": 0.01142128650099039,
+  "full_training_launched": false
+}
