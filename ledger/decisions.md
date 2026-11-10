@@ -114,3 +114,22 @@ divided by the full batch size under D-011. This supersedes only D-011's treatme
 items as negatives. This is our explicit incomplete-label convention, not an author-verified recipe.
 Regression, finite-difference, independent objective-gradient, dead-feature lifecycle and evaluation
 parity checks accompany the repair. Status: active.
+
+## D-013 (2026-11-10, Samu / codex) Pair-frequency sampler and bounded GPU pilots
+User authorized finalizing sampling and running a small GPU pilot. Each available positive training
+qrel contributes one query and one document appearance; every remaining selected query/corpus item
+appears once. Only D-007 training judgments with grade > 0 count; D-010/D-012 remain in force.
+Keep pair units together and identities distinct within a batch. Pack frequent IDs first into the
+least-filled compatible batches, then fill slots with singletons; seed tie/unit/batch ordering with
+1227 and epoch. Preserve every appearance, including residual batches, and audit exact frequencies.
+This intentionally changes upstream's row-wise shuffle and its use of all-split/zero-grade judgments;
+it preserves corrected per-pair epoch frequency rather than uniformly sampling the E3 index.
+No task balancing or replacement sampling is added. Empty-positive batches, if any, use reconstruction
+and auxiliary losses only and are explicitly counted, never dropped or assigned synthetic labels.
+Pilot two separate targets k=2 and 16, each 256 steps, with identical initialization and batch order;
+Qwen dimensions 2560/10240, batch 256, Adam lr 2e-5/wd 1e-4/eps 6.25e-10, auxk 1024, beta .1/gamma 1.
+Use original cached fp32 Qwen vectors, one A100, no AMP/TF32 or LoRA. Compress 64-to-target annealing
+into 70% of pilot steps to exercise the entire schedule; this is not the full paper schedule or an
+accuracy result. Check finite gradients, reconstruction-only exclusion, saved inference at all five
+evaluation k values, and exact next-step optimizer-resume parity. Artifacts stay on scratch, small
+metrics in results/E5. Full epoch budget and highest-k training policy remain open. Status: active.

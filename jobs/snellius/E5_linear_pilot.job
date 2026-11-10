@@ -1,0 +1,22 @@
+#!/bin/bash
+#SBATCH --job-name=E5-linear-pilot
+#SBATCH --partition=gpu_a100
+#SBATCH --gpus-per-node=1
+#SBATCH --cpus-per-task=18
+#SBATCH --time=00:20:00
+#SBATCH --output=outputs/slurm/%x-%j.out
+
+set -euo pipefail
+cd "$SLURM_SUBMIT_DIR"
+source jobs/snellius/env.sh
+: "${PILOT_COMMIT:?Set PILOT_COMMIT to the reviewed source commit}"
+test "$(git rev-parse HEAD)" = "$PILOT_COMMIT"
+test -z "$(git status --porcelain -- src configs jobs third_party)"
+export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"
+export HF_HUB_OFFLINE=1
+export TRANSFORMERS_OFFLINE=1
+export CUBLAS_WORKSPACE_CONFIG=:4096:8
+export OMP_NUM_THREADS=8
+uv run --frozen --no-sync python -m csrv2_repro.sae_pilot \
+    --config configs/E5_linear_pilot.toml \
+    --output "$SCRATCH_ROOT/sae_pilots/E5-linear-$SLURM_JOB_ID"
