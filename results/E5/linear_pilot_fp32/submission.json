@@ -1,0 +1,46 @@
+{
+  "submitted_at_utc": "2026-11-10T15:45:10.250229+00:00",
+  "slurm_job_id": "29072175",
+  "reviewed_source_commit": "1642a62b8231079de53a65d76d52f4326e17fbba",
+  "upstream_commit": "3b2d4d27ec1f9d70af943806ece8dfd665b8d28b",
+  "config": {
+    "exp_id": "E5",
+    "run_name": "linear_pilot_fp32",
+    "dataset": "/scratch-shared/scur0944/csrv2/training_data/training_data_fp32/5cc3c3efd1a81ab343137e5832cd9763bc9f3ff2bf66b7586f01a66edc43f87e/dataset.json",
+    "seed": 1227,
+    "embedding_dim": 2560,
+    "hidden_dim": 10240,
+    "batch_size": 256,
+    "auxk": 1024,
+    "dead_threshold": 30,
+    "initial_k": 64,
+    "target_k": [
+      2,
+      16
+    ],
+    "evaluation_k": [
+      2,
+      4,
+      16,
+      64,
+      2560
+    ],
+    "steps": 256,
+    "lr": 2e-05,
+    "weight_decay": 0.0001,
+    "beta": 0.1,
+    "gamma": 1.0,
+    "cpu_threads": 8
+  },
+  "job_script": "jobs/snellius/E5_linear_pilot.job",
+  "output_directory": "/scratch-shared/scur0944/csrv2/sae_pilots/E5-linear-29072175",
+  "superseded_job_id": "29071949",
+  "superseded_job_runtime_seconds": 0,
+  "validation": {
+    "tests_passed": 56,
+    "ruff_passed": true,
+    "shell_syntax_passed": true,
+    "sampler_source_hash_matches_preflight": true
+  },
+  "training_complete": false
+}
