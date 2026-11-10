@@ -102,3 +102,15 @@ This single-process core changes released-code behavior where it disagrees with 
 do not report it as an unchanged upstream run. No LoRA, full-run sampler, epoch budget or highest-k
 workaround is selected by this decision; CPU checks use a small head only for correctness. D-003 remains
 open for the full-run recipe. Audit and executable checks: docs/reproduction/sae_audit.md. Status: active.
+
+## D-012 (2026-11-10, codex) Enforce reconstruction-only exclusion from contrastive candidates
+Second review found that D-011's zero contribution for an unpaired anchor did not prevent gradients
+through that item as another anchor's negative. This contradicted D-010's reconstruction-only promise.
+Require E3 per-item query-group memberships in supervised batches; items with empty membership are
+excluded from both contrastive anchors and candidates, including the five missing-positive ArguAna
+queries and unlabeled corpus documents. They still contribute to reconstruction and auxiliary losses.
+Other labeled items without an in-batch positive can remain negatives; the contrastive sum is still
+divided by the full batch size under D-011. This supersedes only D-011's treatment of empty-membership
+items as negatives. This is our explicit incomplete-label convention, not an author-verified recipe.
+Regression, finite-difference, independent objective-gradient, dead-feature lifecycle and evaluation
+parity checks accompany the repair. Status: active.

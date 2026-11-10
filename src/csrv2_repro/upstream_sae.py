@@ -112,12 +112,15 @@ def annealed_k(
     return upstream_modules()[1].get_current_k(step, initial_k, final_k, total_steps, decay_ratio)
 
 
-def supervised_contrastive(z: Tensor, positives: Tensor) -> Tensor:
+def supervised_contrastive(
+    z: Tensor, positives: Tensor, *, eligible: Tensor | None = None
+) -> Tensor:
     """Printed Eq. 7: log of summed positive exp(dot), without extra self views.
 
-    Uses D-009 group memberships. Nonpositive off-diagonal items are in-batch
-    negatives, not asserted ground-truth negatives. Anchors lacking positives
-    contribute zero; divide by the whole batch as printed in Eq. 7. A wholly
+    Eligible nonpositive off-diagonal items are in-batch negatives, not asserted
+    ground-truth negatives. Ineligible items participate in neither numerator nor
+    denominator and receive no gradient. Eligible anchors lacking in-batch positives
+    contribute zero; divide by the whole batch under D-011/D-012. A wholly
     unsupervised batch is rejected so supervision cannot silently disappear.
     """
     size = len(z)
@@ -127,12 +130,19 @@ def supervised_contrastive(z: Tensor, positives: Tensor) -> Tensor:
         raise ValueError("positive mask and embeddings must be on the same device")
     if positives.diagonal().any() or not torch.equal(positives, positives.T):
         raise ValueError("positive mask must be symmetric with an empty diagonal")
+    if eligible is None:
+        eligible = torch.ones(size, dtype=torch.bool, device=z.device)
+    if eligible.dtype != torch.bool or eligible.shape != (size,) or eligible.device != z.device:
+        raise ValueError("eligibility must be a boolean batch vector on the embedding device")
+    candidates = eligible[:, None] & eligible[None, :]
+    if (positives & ~candidates).any():
+        raise ValueError("positive pairs cannot include reconstruction-only items")
     anchors = positives.any(dim=1)
     if not anchors.any():
         raise ValueError("supervised batch has no distinct positive pairs")
     logits = z @ z.T
     diagonal = torch.eye(size, dtype=torch.bool, device=z.device)
-    denominator = logits.masked_fill(diagonal, -torch.inf)[anchors].logsumexp(dim=1)
+    denominator = logits.masked_fill(diagonal | ~candidates, -torch.inf)[anchors].logsumexp(dim=1)
     numerator = logits.masked_fill(~positives, -torch.inf)[anchors].logsumexp(dim=1)
     return (denominator - numerator).sum() / size
 
@@ -165,6 +175,14 @@ def linear_loss(
         raise ValueError("invalid dense embedding batch shape")
     if not torch.isfinite(x).all():
         raise ValueError("dense embeddings must be finite")
+    eligible = None
+    if cl_coefficient:
+        groups = batch.get("positive_query_groups")
+        if groups is None or len(groups) != len(x):
+            raise ValueError("supervised batches require per-item positive query groups")
+        eligible = torch.tensor(
+            [bool(group) for group in groups], dtype=torch.bool, device=x.device
+        )
     model.topk = k
     _, _, z, reconstruction, auxiliary = model(x)
     _, _, _, reconstruction_4k, _ = model(x, topk=4 * k)
@@ -174,7 +192,7 @@ def linear_loss(
         "auxiliary": F.mse_loss(auxiliary - model.pre_bias, (x - reconstruction).detach())
         if model.auxk
         else z.sum() * 0,
-        "supervised": supervised_contrastive(z, batch["positive_mask"])
+        "supervised": supervised_contrastive(z, batch["positive_mask"], eligible=eligible)
         if cl_coefficient
         else z.sum() * 0,
     }

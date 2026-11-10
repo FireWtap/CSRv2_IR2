@@ -25,6 +25,7 @@ def batch():
     return {
         "embeddings": torch.randn(4, 5, requires_grad=True),
         "keys": [("task", "query", str(i)) for i in range(4)],
+        "positive_query_groups": [(("task", str(i // 2)),) for i in range(4)],
         "positive_mask": torch.tensor(
             [
                 [False, True, False, False],
@@ -200,3 +201,136 @@ def test_rejects_duplicate_rows_and_capacity_overflow():
         linear_loss(repaired, data, 2)
     with pytest.raises(ValueError, match="capacity"):
         linear_loss(repaired, batch(), 8)
+
+
+def test_reconstruction_only_item_gets_no_supervised_gradient():
+    data = batch()
+    data["embeddings"] = torch.cat([data["embeddings"], torch.ones(1, 5)], dim=0)
+    data["keys"].append(("task", "query", "missing-document"))
+    data["positive_query_groups"] = [
+        (("task", "a"),),
+        (("task", "a"),),
+        (("task", "b"),),
+        (("task", "b"),),
+        (),
+    ]
+    data["positive_mask"] = F.pad(data["positive_mask"], (0, 1, 0, 1))
+    repaired = model()
+    outputs = []
+    hook = repaired.register_forward_hook(lambda module, args, output: outputs.append(output))
+    try:
+        losses = linear_loss(repaired, data, 2)
+    finally:
+        hook.remove()
+    gradient = torch.autograd.grad(losses["supervised"], outputs[0][2])[0]
+    assert gradient[-1].count_nonzero() == 0
+    assert gradient[:-1].abs().sum() > 0
+
+
+def test_supervised_finite_difference_and_excluded_candidate_invariance():
+    torch.manual_seed(17)
+    z = torch.randn(5, 3, dtype=torch.float64, requires_grad=True)
+    positives = F.pad(batch()["positive_mask"], (0, 1, 0, 1))
+    eligible = torch.tensor([True, True, True, True, False])
+
+    def objective(values):
+        return supervised_contrastive(values, positives, eligible=eligible)
+
+    assert torch.autograd.gradcheck(objective, (z,), eps=1e-6, atol=1e-6, rtol=1e-4)
+    changed = z.detach().clone()
+    changed[-1] = 1000
+    torch.testing.assert_close(objective(z), objective(changed), rtol=0, atol=0)
+    torch.testing.assert_close(
+        objective(z), supervised_contrastive(z[:4], positives[:4, :4]) * 4 / 5
+    )
+
+
+def test_complete_objective_and_parameter_gradients_against_independent_reference():
+    data = batch()
+    data["embeddings"] = data["embeddings"].detach().double()
+    repaired = model().double()
+    with torch.no_grad():
+        repaired.pre_bias.copy_(torch.linspace(-0.2, 0.3, 5))
+        repaired.latent_bias.copy_(torch.linspace(-0.1, 0.2, 16))
+        repaired.stats_last_nonzero.fill_(10)
+    weight, pre_bias, bias = [
+        p.detach().clone().requires_grad_()
+        for p in (repaired.encoder.weight, repaired.pre_bias, repaired.latent_bias)
+    ]
+
+    def select(values, k):
+        # Independent ordering/masking implementation, not the production scatter helper.
+        order = torch.argsort(values, dim=-1, descending=True)
+        mask = torch.zeros_like(values, dtype=torch.bool)
+        for i in range(len(values)):
+            mask[i, order[i, :k]] = True
+        return values.clamp_min(0) * mask
+
+    x = data["embeddings"]
+    pre = (x - pre_bias) @ weight.T + bias
+    z, z4 = select(pre, 2), select(pre, 8)
+    reconstruction, reconstruction4 = z @ weight + pre_bias, z4 @ weight + pre_bias
+    dead = ~(z > 1e-5).any(dim=0)
+    auxiliary = select(torch.where(dead, pre, 0.0), 4) @ weight
+    assert auxiliary.count_nonzero() > 0
+    scores = torch.exp(z @ z.T)
+    supervised = -torch.stack(
+        [
+            torch.log(
+                scores[i, data["positive_mask"][i]].sum()
+                / sum(scores[i, j] for j in range(4) if j != i)
+            )
+            for i in range(4)
+        ]
+    ).mean()
+    expected = {
+        "reconstruction": ((reconstruction - x) ** 2).mean(),
+        "reconstruction_4k": ((reconstruction4 - x) ** 2).mean(),
+        "auxiliary": ((auxiliary - (x - reconstruction).detach()) ** 2).mean(),
+        "supervised": supervised,
+    }
+    actual = linear_loss(repaired, data, 2)
+    parameters = (repaired.encoder.weight, repaired.pre_bias, repaired.latent_bias)
+    for term in expected:
+        torch.testing.assert_close(actual[term], expected[term], rtol=1e-12, atol=1e-12)
+        gradients = torch.autograd.grad(actual[term], parameters, retain_graph=True)
+        reference = torch.autograd.grad(expected[term], (weight, pre_bias, bias), retain_graph=True)
+        for g, r in zip(gradients, reference):
+            torch.testing.assert_close(g, r, rtol=1e-10, atol=1e-12)
+
+
+def test_dead_features_become_auxiliary_after_threshold_and_recover():
+    repaired = VerifiedCSR(n_inputs=2, n_latents=4, topk=1, auxk=2, dead_threshold=3)
+    pre = torch.tensor([[4.0, 3.0, 2.0, 1.0]])
+    for step in range(1, 5):
+        _, aux = repaired.top_k(pre)
+        repaired.top_k(pre, topk=4)
+        assert repaired.stats_last_nonzero.tolist() == [1, step, step, step]
+        if step <= 3:
+            assert aux.count_nonzero() == 0
+        else:
+            torch.testing.assert_close(aux, torch.tensor([[0.0, 3.0, 2.0, 0.0]]))
+    repaired.top_k(torch.tensor([[1.0, 5.0, 2.0, 0.0]]))
+    assert repaired.stats_last_nonzero.tolist() == [2, 1, 5, 5]
+
+
+def test_inference_matches_sentence_transformers_evaluation_path():
+    from sentence_transformers.sparse_encoder.models import SparseAutoEncoder
+
+    repaired = model()
+    evaluation = SparseAutoEncoder(input_dim=5, hidden_dim=16, k=2, k_aux=4)
+    evaluation.load_state_dict(repaired.state_dict(), strict=True)
+    x = batch()["embeddings"].detach()
+    with torch.inference_mode():
+        for k in (1, 2, 4, 16):
+            actual = evaluation({"sentence_embedding": x.clone()}, max_active_dims=k)[
+                "sentence_embedding"
+            ]
+            torch.testing.assert_close(actual, repaired.encode(x, k), rtol=0, atol=0)
+
+
+def test_supervised_run_cannot_omit_group_memberships():
+    data = batch()
+    del data["positive_query_groups"]
+    with pytest.raises(ValueError, match="query groups"):
+        linear_loss(model(), data, 2)

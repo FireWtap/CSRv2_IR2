@@ -11,6 +11,7 @@ from csrv2_repro.common import REPO_ROOT, UPSTREAM_TEXT, provenance, write_json
 from csrv2_repro.training_data import RetrievalTrainingDataset, collate_training_items
 from csrv2_repro.upstream_sae import (
     VerifiedCSR,
+    annealed_k,
     linear_loss,
     make_optimizer,
     supervised_contrastive,
@@ -22,6 +23,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dataset", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--review",
+        action="store_true",
+        help="64 CPU check steps across all tasks, including missing ArguAna positives",
+    )
     args = parser.parse_args()
     torch.set_num_threads(2)
     torch.manual_seed(1227)
@@ -43,7 +49,7 @@ def main():
     offset = 0
     for task in dataset.tasks:
         queries, docs = dataset.query_ids(task), dataset.document_ids(task)
-        if task in {"ArguAna", "NFCorpus"}:
+        if args.review or task in {"ArguAna", "NFCorpus"}:
             available = set(docs)
             qid, did = next(
                 (q, d)
@@ -57,9 +63,21 @@ def main():
                     dataset[offset + len(queries) + docs.index(did)],
                 ]
             )
+            if args.review and task == "ArguAna":
+                missing_queries = [
+                    q
+                    for q in queries
+                    if not any(
+                        g > 0 and d in available for d, g in dataset.judgments(task, q).items()
+                    )
+                ]
+                assert len(missing_queries) == 5
+                items.extend(dataset[offset + queries.index(q)] for q in missing_queries)
         offset += len(queries) + len(docs)
-    assert len(items) == 4
+    assert len(items) == (21 if args.review else 4)
     data = collate_training_items(items)
+    excluded = torch.tensor([not bool(g) for g in data["positive_query_groups"]])
+    steps = 64 if args.review else 1
     config = {
         "purpose": "CPU correctness check, not paper training or retrieval evaluation",
         "dataset": str(args.dataset.resolve()),
@@ -69,26 +87,48 @@ def main():
         "topk": 2,
         "auxk": 16,
         "dead_threshold": 30,
-        "steps": 1,
-        "batch_size": 4,
+        "steps": steps,
+        "initial_topk": 16 if args.review else 2,
+        "batch_size": len(items),
         "lr": 2e-5,
         "weight_decay": 1e-4,
         "aux_coefficient": 0.1,
         "cl_coefficient": 1.0,
-        "loss_protocol": "printed_equations_D-011",
+        "loss_protocol": "printed_equations_D-011_D-012",
     }
     model = VerifiedCSR(n_inputs=dataset.embedding_dim, n_latents=128, topk=2, auxk=16)
     optimizer = make_optimizer(model, lr=2e-5, weight_decay=1e-4)
     before = model.encoder.weight.detach().clone()
-    losses = linear_loss(model, data, 2)
-    supervised_grad = torch.autograd.grad(
-        losses["supervised"], model.encoder.weight, retain_graph=True
-    )[0]
-    optimizer.zero_grad()
-    losses["total"].backward()
-    assert all(torch.isfinite(p.grad).all() for p in model.parameters())
-    assert supervised_grad.norm() > 0
-    optimizer.step()
+    history = []
+    for step in range(steps):
+        k = annealed_k(step, config["initial_topk"], 2, steps, 128)
+        observed = []
+        hook = model.register_forward_hook(lambda module, args, output: observed.append(output[2]))
+        try:
+            losses = linear_loss(model, data, k)
+        finally:
+            hook.remove()
+        supervised_grad, latent_grad = torch.autograd.grad(
+            losses["supervised"], (model.encoder.weight, observed[0]), retain_graph=True
+        )
+        excluded_gradient = latent_grad[excluded].abs().sum().item()
+        assert excluded_gradient == 0
+        optimizer.zero_grad()
+        losses["total"].backward()
+        assert all(torch.isfinite(p.grad).all() for p in model.parameters())
+        assert supervised_grad.norm() > 0
+        optimizer.step()
+        assert all(torch.isfinite(p).all() for p in model.parameters())
+        history.append(
+            {
+                "step": step,
+                "k": k,
+                "losses": {key: value.item() for key, value in losses.items()},
+                "supervised_gradient_norm": supervised_grad.norm().item(),
+                "reconstruction_only_supervised_gradient_l1": excluded_gradient,
+                "max_inactivity_counter": model.stats_last_nonzero.max().item(),
+            }
+        )
     assert not torch.equal(before, model.encoder.weight)
     files = [UPSTREAM_TEXT / name for name in ("model_zoo.py", "CSR_training.py", "utils.py")] + [
         REPO_ROOT / "src/csrv2_repro/upstream_sae.py",
@@ -113,6 +153,8 @@ def main():
         "real_cached_batch_losses": {k: v.item() for k, v in losses.items()},
         "real_cached_batch_supervised_gradient_norm": supervised_grad.norm().item(),
         "real_cached_batch_encoder_update_norm": (before - model.encoder.weight).norm().item(),
+        "reconstruction_only_count": excluded.sum().item(),
+        "step_checks": history,
         "full_training_launched": False,
     }
     write_json(args.output, report)

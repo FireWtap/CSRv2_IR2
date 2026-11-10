@@ -104,10 +104,18 @@ It rejects duplicate item keys, impossible 4k values, nonfinite input/loss, and 
 supervised batch containing no distinct positive pair. No backbone is instantiated.
 
 Missing-positive anchors contribute zero and the sum is divided by the complete
-batch size. Nonpositive distinct items serve as in-batch negatives, including unjudged
-items; this does not assert their ground-truth irrelevance. These choices are explicit
-extensions for incomplete labels, recorded in D-011. The paper does not settle them.
-The five unavailable ArguAna positives remain reconstruction-only under D-010.
+batch size. Under D-012, items with empty query-group memberships are excluded from
+both contrastive anchors and candidates: they cannot receive gradients through another
+example's negative term. Distinct labeled items can serve as in-batch negatives even
+without an in-batch positive; this does not assert their ground-truth irrelevance.
+These choices are explicit extensions for incomplete labels, recorded in D-011/D-012.
+The paper does not settle them. The five missing-positive ArguAna queries, and unlabeled
+corpus documents, contribute to reconstruction/auxiliary losses only.
+
+The second review found and repaired this exclusion bug in the initial D-011 core.
+Previously, a zero anchor contribution was mistaken for zero supervised gradient;
+an empty-membership example still received gradients as a negative candidate. The
+new regression failed on the original local core and passes after the D-012 repair.
 
 This core follows the **printed equations**, with the conventions above. It is not
 a claim that those equations were exactly what the authors executed. In particular,
@@ -139,7 +147,23 @@ pairs (ArguAna and NFCorpus). It deliberately uses a small 128-wide head for cor
 not the paper's 10240-wide model. It checks nonzero supervised gradients, finite gradients,
 and a weight update. It does not save a trained checkpoint or measure retrieval quality.
 
-The recorded result is `results/E5/upstream_audit.json`, with code/upstream commits,
+The initial recorded result is `results/E5/upstream_audit.json`, with code/upstream commits,
 source hashes, input manifest identity, explicit smoke configuration, and SLURM id
 (null for this CPU check). Unit tests additionally cover the paper equation and gradients,
 auxiliary behavior, annealing, input immutability, tied weights, and checkpoint round-trip.
+
+For the second review, add `--review` to `scripts/audit_sae.py`. It runs 64 CPU check
+steps on one real positive pair per task plus the five missing-positive ArguAna queries
+(21 distinct items), using a 128-wide head and a 16-to-2 schedule. Every step checks
+finite gradients/parameters, a nonzero supervised parameter gradient, and exactly zero
+supervised latent gradient for all five reconstruction-only items. This fixed-batch
+check is not an epoch sampler, generalization experiment, or paper-sized GPU pilot.
+The follow-up record is `results/E5/upstream_review.json`; the original result is
+retained as historical evidence, not overwritten.
+
+Additional unit checks independently reconstruct every objective component and all
+parameter gradients, use numerical finite differences for contrastive gradients, follow
+dead-feature activation and recovery across the threshold, and compare outputs exactly
+with the installed Sentence Transformers evaluation module at multiple inference k.
+Passing these checks supports the specified local implementation; it cannot prove
+equivalence to undocumented author choices or predict reproduced retrieval scores.
