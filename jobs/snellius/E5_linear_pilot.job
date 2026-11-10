@@ -10,8 +10,9 @@ set -euo pipefail
 cd "$SLURM_SUBMIT_DIR"
 source jobs/snellius/env.sh
 : "${PILOT_COMMIT:?Set PILOT_COMMIT to the reviewed source commit}"
-test "$(git rev-parse HEAD)" = "$PILOT_COMMIT"
-test -z "$(git status --porcelain -- src configs jobs third_party)"
+# Permit ledger/results commits while queued, but reject any training/environment change.
+git diff --quiet "$PILOT_COMMIT" -- src configs jobs third_party pyproject.toml uv.lock
+test -z "$(git status --porcelain -- src configs jobs third_party pyproject.toml uv.lock)"
 export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"
 export HF_HUB_OFFLINE=1
 export TRANSFORMERS_OFFLINE=1

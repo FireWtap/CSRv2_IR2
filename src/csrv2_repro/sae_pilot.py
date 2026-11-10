@@ -221,6 +221,7 @@ def main():
     args.output.mkdir(parents=True)
     torch.set_num_threads(cfg["cpu_threads"])
     source = provenance(cfg)
+    source["reviewed_source_commit"] = os.environ.get("PILOT_COMMIT")
     source["source_sha256"] = {
         str(p.relative_to(REPO_ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
         for p in [

@@ -90,7 +90,8 @@ mkdir -p outputs/slurm
 PILOT_COMMIT=$(git rev-parse HEAD) sbatch --export=ALL jobs/snellius/E5_linear_pilot.job
 ```
 
-The job verifies its source commit and writes to
+The job checks that code/config/environment files still match the reviewed source
+commit, allowing ledger/results-only commits while queued, and writes to
 `$SCRATCH_ROOT/sae_pilots/E5-linear-<job-id>/`: full-epoch `sampling.json`, combined
 `summary.json`, and one `k*/summary.json` plus `k*/checkpoint.pth` per target. Summary
 files include source/config hashes, repository/upstream commits, SLURM id, dataset and
