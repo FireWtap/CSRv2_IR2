@@ -84,3 +84,21 @@ iteration only emits documents present in the corpus. These queries have empty c
 The source-coverage check found no such gaps in the other seven tasks or held-out/validation splits.
 This refines D-009's handling of incomplete source data; final counts are recorded in the E3 audit.
 Status: active.
+
+## D-011 (2026-11-10, Samu / codex) Reuse verified upstream SAE components; distinguish paper from code
+User requests CSRv2-linear on frozen original Qwen vectors and maximal upstream reuse after verifying
+paper agreement. Import the pinned upstream CSR class and k scheduler directly. Keep its initialization,
+tied weights, biases, preprocessing/forward/decoder methods, mean-MSE convention and Adam epsilon.
+Repair TopK locally: preserve preactivations, support auxk=0, count dead-feature inactivity once per
+target-k training pass and never during inference (threshold 30 and activity cutoff 1e-5 remain upstream).
+For the paper-equation core, implement Eq. 7's dot-product log-sum-positive ratio using D-009 memberships,
+without upstream's cosine/temperature-0.2 transform or duplicated self-positive views; use ordinary
+auxiliary residual MSE without upstream's variance normalization. Preserve a detached reconstruction
+target for auxiliary gradients; remove decoder bias from the auxiliary prediction. Unpaired anchors
+contribute zero, averaging over the entire batch; reject batches with no positive pair and duplicate item
+keys. Other distinct in-batch items act as negatives, not verified nonrelevant documents. These explicit
+choices address underspecified edge cases; they are not proof of the authors' historical implementation.
+This single-process core changes released-code behavior where it disagrees with the printed recipe;
+do not report it as an unchanged upstream run. No LoRA, full-run sampler, epoch budget or highest-k
+workaround is selected by this decision; CPU checks use a small head only for correctness. D-003 remains
+open for the full-run recipe. Audit and executable checks: docs/reproduction/sae_audit.md. Status: active.

@@ -37,10 +37,11 @@ Sources: `third_party/CSRv2@3b2d4d2` (text/), released `Y-Research-Group/CSRv2-r
   is close but not exact (gap ~7k, unknown cause: other cap, dataset revisions, or code not in the repo;
   note the repo's `get_embeddings_of_each_dataset.py` does not even parse, so it is not what they ran).
   The SAE-side leakage can only be checked in code, not from the checkpoint.
-- **One SAE for all k vs one per k: unresolved.** The model card says one SAE serves every k thanks to a
-  "Multi-TopK loss", and ships a single SAE (default k=2). The released `CSR_training.py` has no multi-k
-  loss: one `--topk` target (+ the 4k auxiliary term). So either the released SAE came from code not in the
-  repo, or it was trained for k=2 and evaluated at other k.
+- **Correction (2026-11-10): multi-TopK is implemented.** The paper explicitly calls
+  `L(k) + L(4k)/8` its multi-TopK loss (Eqs. 4, 8); the released trainer implements that term.
+  This supports changing inference k with a shared SAE and is not evidence of missing multi-k code.
+  Which training target(s) produced every table entry/released head remains undocumented here.
+  See [the SAE audit](sae_audit.md) for verified reuse and actual implementation discrepancies.
 - **Backbone finetune differs from the paper (Table 7: 10 epochs, lr 2e-5, warmup 1000).** `trainer_state.json`:
   `num_train_epochs=1`, stopped at step 16000 of 17289 (epoch 0.93), per-device batch 4, peak lr 1e-5
   reached at step ~1800 (linear warmup). Trained with sentence-transformers 5.2.0, peft 0.18.1 (we pin 5.0.0 / 0.15.2).
