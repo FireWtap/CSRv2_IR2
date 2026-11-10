@@ -74,3 +74,13 @@ unjudged/zero-grade relations create no positive membership. Group IDs include t
 Match the actual MTEB 1.38.39 corpus order (descending string IDs, 50000-row chunks), despite its
 misleading length-sort log message. Verify pinned text/model/prompt cache keys and array checksums
 before reuse. Epoch sampling and SAE loss implementation remain E4/E5 work. Status: active.
+
+## D-010 (2026-11-10, codex) Preserve queries whose judged documents are absent
+The pinned ArguAna corpus is missing the positive documents for five D-007 training queries.
+Keep their original judgments and query embeddings in the indexed dataset, and explicitly audit the
+missing document IDs. They remain reconstruction examples but have no available supervised positives;
+do not fabricate vectors, silently delete judgments, or change the frozen query split. Positive-pair
+iteration only emits documents present in the corpus. These queries have empty collator memberships.
+The source-coverage check found no such gaps in the other seven tasks or held-out/validation splits.
+This refines D-009's handling of incomplete source data; final counts are recorded in the E3 audit.
+Status: active.

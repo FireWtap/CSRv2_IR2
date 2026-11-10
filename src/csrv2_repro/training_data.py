@@ -91,11 +91,26 @@ class RetrievalTrainingDataset:
             ):
                 raise ValueError(f"Judgment count mismatch: {name}")
             memberships = {d: [] for d in docs}
+            missing = {
+                q: {d: g for d, g in ds.items() if d not in memberships}
+                for q, ds in spec["qrels"].items()
+                if any(d not in memberships for d in ds)
+            }
+            without_positive = [
+                q
+                for q, ds in spec["qrels"].items()
+                if not any(d in memberships and g > 0 for d, g in ds.items())
+            ]
+            if (
+                missing != spec["missing_corpus_judgments"]
+                or without_positive != spec["queries_without_available_positives"]
+            ):
+                raise ValueError(f"Missing-document audit mismatch: {name}")
             for qid, judged in spec["qrels"].items():
                 for did, grade in judged.items():
-                    if did not in memberships or not isinstance(grade, int) or grade < 0:
+                    if not isinstance(grade, int) or grade < 0:
                         raise ValueError(f"Invalid judgment: {name}/{qid}/{did}")
-                    if grade > 0:
+                    if grade > 0 and did in memberships:
                         memberships[did].append((name, qid))
             cursor = 0
             for shard in index["corpus"]["shards"]:
@@ -172,7 +187,7 @@ class RetrievalTrainingDataset:
         for task in self.tasks:
             for qid, docs in self._data[task]["queries"]["qrels"].items():
                 for did, grade in docs.items():
-                    if grade > 0:
+                    if grade > 0 and did in self._data[task]["document_rows"]:
                         yield task, qid, did, grade
 
     def relevance_matrix(
@@ -211,7 +226,12 @@ class RetrievalTrainingDataset:
         if offset < nq:
             key = spec["queries"]["query_ids"][offset]
             vector = self.query_vector(task, key)
-            groups, kind = ((task, key),), "query"
+            groups = (
+                ()
+                if key in spec["queries"]["queries_without_available_positives"]
+                else ((task, key),)
+            )
+            kind = "query"
         else:
             key = spec["corpus"]["ids"][offset - nq]
             vector = self.document_vector(task, key)

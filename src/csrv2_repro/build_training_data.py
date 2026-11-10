@@ -101,8 +101,25 @@ def build_task(
         ids = list(qrels)
         if not set(ids) <= queries.keys():
             raise ValueError(f"Missing query texts: {name}/{partition}")
-        if any(d not in corpus for docs in qrels.values() for d in docs):
-            raise ValueError(f"Judged document missing from corpus: {name}/{partition}")
+        missing = {
+            q: {d: grade for d, grade in docs.items() if d not in corpus}
+            for q, docs in qrels.items()
+            if any(d not in corpus for d in docs)
+        }
+        without_positive = [
+            q
+            for q, docs in qrels.items()
+            if not any(d in corpus and grade > 0 for d, grade in docs.items())
+        ]
+        if missing:
+            logger.warning(
+                "%s/%s: preserving %d judgments for absent corpus documents; "
+                "%d queries have no available positive",
+                name,
+                partition,
+                sum(len(d) for d in missing.values()),
+                len(without_positive),
+            )
         if any(not any(score > 0 for score in docs.values()) for docs in qrels.values()):
             raise ValueError(f"Query has no positive judgment: {name}/{partition}")
         shard, rows = None, []
@@ -128,7 +145,14 @@ def build_task(
                 rows = [test_rows[q] for q in ids]
             else:
                 raise FileNotFoundError(f"Missing official {partition} query embeddings: {path}")
-        partitions[partition] = {"query_ids": ids, "rows": rows, "shard": shard, "qrels": qrels}
+        partitions[partition] = {
+            "query_ids": ids,
+            "rows": rows,
+            "shard": shard,
+            "qrels": qrels,
+            "missing_corpus_judgments": missing,
+            "queries_without_available_positives": without_positive,
+        }
     return {
         "schema_version": 1,
         "task": name,
@@ -140,16 +164,24 @@ def build_task(
 
 def summarize_task(index: dict) -> dict:
     counts = {}
+    corpus_ids = set(index["corpus"]["ids"])
     for part, spec in index["partitions"].items():
         membership = {}
         for docs in spec["qrels"].values():
             for did, grade in docs.items():
-                if grade > 0:
+                if grade > 0 and did in corpus_ids:
                     membership[did] = membership.get(did, 0) + 1
         counts[part] = {
             "queries": len(spec["query_ids"]),
             "judgments": sum(len(v) for v in spec["qrels"].values()),
             "positive_pairs": sum(membership.values()),
+            "positive_judgments": sum(
+                v > 0 for docs in spec["qrels"].values() for v in docs.values()
+            ),
+            "missing_corpus_judgments": sum(
+                len(d) for d in spec["missing_corpus_judgments"].values()
+            ),
+            "queries_without_available_positives": len(spec["queries_without_available_positives"]),
             "positive_documents": len(membership),
             "documents_shared_by_queries": sum(n > 1 for n in membership.values()),
             "grades": sorted({v for docs in spec["qrels"].values() for v in docs.values()}),

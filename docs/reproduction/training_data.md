@@ -59,7 +59,8 @@ Supervision helpers:
 
 - `query_ids(task)`, `document_ids(task)`, `query_vector(task, qid)`, `document_vector(task, did)`.
 - `judgments(task, qid)` returns every original grade, including zero.
-- `positive_pairs()` yields `(task, query_id, document_id, grade)` for grades above zero.
+- `positive_pairs()` yields `(task, query_id, document_id, grade)` for grades above zero
+  when the document exists in the corpus.
 - `relevance_matrix(query_keys, document_keys)` preserves grades; `-1` denotes unjudged pairs,
   distinct from explicitly judged nonrelevance (`0`). Keys are `(task, ID)` tuples.
 - `positive_mask(query_keys, document_keys)` marks the directly judged positive query/document edges.
@@ -69,6 +70,13 @@ items are positive if they share a group. Sharing a document does not merge two 
 Repeated copies of the same item and diagonal entries are excluded. Unrelated documents have no
 supervised group. Task namespaces prevent identical IDs from different datasets becoming positives.
 This fixes the scalar-label information loss described in the upstream audit (D-009).
+
+The pinned ArguAna corpus lacks positive documents for five training queries (D-010). Their
+query vectors and original judgments are retained, with the unavailable document IDs listed in
+`missing_corpus_judgments` and the affected queries in `queries_without_available_positives`.
+They remain reconstruction examples but have empty supervised memberships. No substitute vectors
+are created and no frozen query assignments change. The audit distinguishes positive judgments
+from available positive pairs. Other tasks and evaluation/validation queries had no such gaps.
 
 The collator preserves available positives; it does not guarantee that a uniformly sampled batch
 contains a positive pair. A sampler that includes meaningful positive pairs, the SAE losses,

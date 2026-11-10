@@ -223,3 +223,53 @@ def test_collation_preserves_multiple_groups_without_transitive_merging(artifact
     assert not mask.diagonal().any() and not mask[4].any() and not mask[5].any()
     repeated = collate_training_items([lookup[keys[0]], lookup[keys[0]]])
     assert not repeated["positive_mask"].any()
+
+
+def test_absent_positive_documents_keep_queries_and_original_judgments(artifact):
+    path, _, queries, corpus, raw = artifact
+    qrels = raw["Official"]
+    qrels["train"]["q0"] = {"absent-document": 2, "1": 0}
+    source = {"path": "toy/source", "revision": "pinned"}
+    entry = build_task_split(qrels, source)
+    manifest = seal_manifest({"Official": entry})
+    index = build_task(
+        "Official",
+        entry,
+        qrels,
+        queries,
+        corpus,
+        path.parent / "cache",
+        "model",
+        "prompt",
+        "prompt",
+        3,
+        2,
+    )
+    index["manifest_sha256"] = manifest["sha256"]
+    spec = index["partitions"]["train"]
+    assert spec["missing_corpus_judgments"] == {"q0": {"absent-document": 2}}
+    assert spec["queries_without_available_positives"] == ["q0"]
+    write_json(path.parent / "Official.json", index)
+    bundle = {
+        "schema_version": 1,
+        "manifest_sha256": manifest["sha256"],
+        "embedding_dim": 3,
+        "config": {"tasks": ["Official"]},
+        "tasks": {
+            "Official": {
+                "index": "Official.json",
+                "sha256": file_sha256(path.parent / "Official.json"),
+            }
+        },
+    }
+    bundle["sha256"] = digest(bundle)
+    write_json(path, bundle)
+    write_json(path.parent / "split_manifest.json", manifest)
+    data = RetrievalTrainingDataset(path)
+    assert data.query_ids("Official") == ("q0", "q1")
+    assert data.judgments("Official", "q0") == {"absent-document": 2, "1": 0}
+    assert data[0]["positive_query_groups"] == ()
+    assert list(data.positive_pairs()) == [("Official", "q1", "2", 1)]
+    assert not data.positive_mask([("Official", "q0")], [("Official", d) for d in corpus]).any()
+    with pytest.raises(KeyError):
+        data.document_vector("Official", "absent-document")
