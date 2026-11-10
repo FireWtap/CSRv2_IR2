@@ -153,7 +153,7 @@ Configs use `configs/<ID>_*.toml`.
 | E1p | Precision check bf16 vs fp32: dense Qwen3-4B + E0 ckpt on NFCorpus+SciFact -> results/E1p/precision_report.json | D-005 | env | results available; protocol review pending |
 | E1  | Dense backbone, 8 tasks, prompt protocol both + query, cache embeddings | Tab.3 row 1      | E1p (dtype) | ready (job eval8, needs DTYPE from D-005) |
 | E2  | MRL: truncate cached E1 embeddings to k                               | Tab.3 MRL        | E1         | ready (job eval8) |
-| E3  | Frozen query partitions, then training embeddings (replaces broken upstream preparation) | App. B | env | D-007 manifest/export/eval integration done; embedding extraction todo |
+| E3  | Frozen query partitions and ID-indexed training embeddings (replaces broken upstream preparation) | App. B | env | complete: dense fp32 cache audited, train/validation views verified; D-010 records five unavailable ArguAna positives |
 | E4  | CSR (no anneal, unsupervised CL) on E3, eval on cached E1            | Tab.3 CSR        | E1, E3     | todo    |
 | E5  | CSRv2-linear (anneal + SpSCL) on E3                                   | Tab.3 CSRv2-lin  | E1, E3     | todo    |
 | E6  | CSRv2: TopK-LoRA backbone finetune, re-embed, train SAE, eval         | Tab.3 CSRv2      | E3         | optional (D-006) |
@@ -211,6 +211,14 @@ If results diverge, inspect preprocessing/precision/checkpoint identity using th
 protocol; report alternative protocols separately rather than tuning on test scores.
 
 ### Stage 3-4: controlled SAE reproduction
+
+E3 completed on 2026-11-10: all eight task caches match pinned source texts and IDs;
+13,756 training queries and 824 validation queries are indexed against 240,884 corpus documents.
+The training view preserves 136,307 available positive pairs and all original qrel grades.
+Five ArguAna queries with absent positive documents remain reconstruction-only examples (D-010).
+Evidence: `results/E3/training_data_fp32/summary.json` and `verification.json`;
+loader/handoff: `docs/reproduction/training_data.md`. Next: E4/E5 loss implementation and
+sampling that places useful positives in each supervised batch, then controlled pilots.
 
 Resolve the following before full training:
 

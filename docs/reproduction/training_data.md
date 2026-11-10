@@ -15,6 +15,11 @@ the `dataset.json` path under `$SCRATCH_ROOT/training_data/training_data_fp32/`.
 copy of the split manifest live alongside it. `results/E3/training_data_fp32/summary.json` records the
 generating commit, config, source code hashes, corpus/query counts, grades and positive-pair counts.
 
+The completed audit (2026-11-10) covers all eight tasks: 240,884 corpus documents, 13,756 training
+queries, 824 validation queries, and 136,307 available training positive pairs. The materialized
+loader views passed the checks recorded in `results/E3/training_data_fp32/verification.json`.
+No backbone inference or SAE training was needed for this build.
+
 ## Cache audit
 
 - Load qrels, query text and corpus text at the manifest's exact dataset revisions.

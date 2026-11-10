@@ -1,0 +1,128 @@
+{
+  "status": "verified",
+  "dataset_path": "/gpfs/scratch1/shared/scur0944/csrv2/training_data/training_data_fp32/5cc3c3efd1a81ab343137e5832cd9763bc9f3ff2bf66b7586f01a66edc43f87e/dataset.json",
+  "dataset_sha256": "9a35f1f0336e1c7f7dbcdf4e426cfa608b8392f8ad4f9cf7578d7d32436ae332",
+  "summary_sha256": "55baa635b8ee6f8fc5b059386cb7af729bfb13d529c58352c26c3b05ef0f485f",
+  "views": {
+    "train": {
+      "queries": 13756,
+      "corpus_documents": 240884,
+      "pool_size": 254640,
+      "available_positive_pairs": 136307,
+      "shared_document_batches_checked": 4
+    },
+    "validation": {
+      "queries": 824,
+      "corpus_documents": 240884,
+      "pool_size": 241708,
+      "available_positive_pairs": 12623,
+      "shared_document_batches_checked": 1
+    }
+  },
+  "unavailable_judgments": {
+    "ArguAna/train": [
+      {
+        "query_id": "test-education-ufsdfkhbwu-con03a",
+        "document_id": "test-education-ufsdfkhbwu-con03b",
+        "grade": 1
+      },
+      {
+        "query_id": "test-free-speech-debate-yfsdfkhbwu-con03a",
+        "document_id": "test-free-speech-debate-yfsdfkhbwu-con03b",
+        "grade": 1
+      },
+      {
+        "query_id": "test-politics-dhwem-pro06a",
+        "document_id": "test-politics-dhwem-pro06b",
+        "grade": 1
+      },
+      {
+        "query_id": "test-science-sghwbdgmo-con03a",
+        "document_id": "test-science-sghwbdgmo-con03b",
+        "grade": 1
+      },
+      {
+        "query_id": "test-society-asfhwapg-con04a",
+        "document_id": "test-society-asfhwapg-con04b",
+        "grade": 1
+      }
+    ]
+  },
+  "checks": [
+    "file/index hashes",
+    "exact manifest query IDs",
+    "original exported judgments",
+    "held-out access rejected",
+    "positive pair coverage",
+    "shared-document batch masks",
+    "document lookup at shard boundaries",
+    "query vector lookup"
+  ],
+  "generating_provenance": {
+    "timestamp_utc": "2026-11-10T12:15:14+00:00",
+    "git_commit": "499b34c7f594bc56dff94f119cb29a4b4cbd1830",
+    "git_dirty": false,
+    "upstream_commit": "3b2d4d27ec1f9d70af943806ece8dfd665b8d28b",
+    "slurm_job_id": null,
+    "host": "int4.local.snellius.surf.nl",
+    "gpu": null,
+    "python": "3.11.18",
+    "packages": {
+      "torch": "2.7.0",
+      "transformers": "4.55.0",
+      "sentence-transformers": "5.0.0",
+      "mteb": "1.38.39",
+      "peft": "0.15.2"
+    },
+    "config": {
+      "exp_id": "E3",
+      "run_name": "training_data_fp32",
+      "dense_config": "configs/E1_dense_both.toml",
+      "dtype": "float32",
+      "split_manifest": "results/E3/split_manifest.json",
+      "embedding_dim": 2560,
+      "corpus_chunk_size": 50000,
+      "tasks": [
+        "ArguAna",
+        "NFCorpus",
+        "CQADupstackGamingRetrieval",
+        "CQADupstackUnixRetrieval",
+        "ClimateFEVERHardNegatives",
+        "FiQA2018",
+        "SCIDOCS",
+        "SciFact"
+      ],
+      "resolved_dense_config": {
+        "exp_id": "E1",
+        "run_name": "qwen3_4b_dense_prompt_both_fp32",
+        "model": "Qwen/Qwen3-Embedding-4B",
+        "revision": "5cf2132abc99cad020ac570b19d031efec650f2b",
+        "max_seq_length": 512,
+        "batch_size": 16,
+        "prompt_mode": "both",
+        "paper_target_mean": 58.37,
+        "dtype": "float32"
+      }
+    }
+  },
+  "verification_provenance": {
+    "timestamp_utc": "2026-11-10T12:18:45+00:00",
+    "git_commit": "499b34c7f594bc56dff94f119cb29a4b4cbd1830",
+    "git_dirty": true,
+    "upstream_commit": "3b2d4d27ec1f9d70af943806ece8dfd665b8d28b",
+    "slurm_job_id": null,
+    "host": "int4.local.snellius.surf.nl",
+    "gpu": null,
+    "python": "3.11.18",
+    "packages": {
+      "torch": "2.7.0",
+      "transformers": "4.55.0",
+      "sentence-transformers": "5.0.0",
+      "mteb": "1.38.39",
+      "peft": "0.15.2"
+    },
+    "config": {
+      "dataset_sha256": "9a35f1f0336e1c7f7dbcdf4e426cfa608b8392f8ad4f9cf7578d7d32436ae332"
+    }
+  }
+}

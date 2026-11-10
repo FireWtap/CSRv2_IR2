@@ -1,0 +1,306 @@
+{
+  "status": "complete",
+  "manifest_sha256": "ec414bd788251a8dfd2f4444adef9991a49430e3cc890a95183d55fc124b3db5",
+  "tasks": {
+    "ArguAna": {
+      "corpus_documents": 8674,
+      "corpus_shards": 1,
+      "partitions": {
+        "train": {
+          "queries": 1124,
+          "judgments": 1124,
+          "positive_pairs": 1119,
+          "positive_judgments": 1124,
+          "missing_corpus_judgments": 5,
+          "queries_without_available_positives": 5,
+          "positive_documents": 1119,
+          "documents_shared_by_queries": 0,
+          "grades": [
+            1
+          ]
+        },
+        "validation": {
+          "queries": 0,
+          "judgments": 0,
+          "positive_pairs": 0,
+          "positive_judgments": 0,
+          "missing_corpus_judgments": 0,
+          "queries_without_available_positives": 0,
+          "positive_documents": 0,
+          "documents_shared_by_queries": 0,
+          "grades": []
+        }
+      }
+    },
+    "NFCorpus": {
+      "corpus_documents": 3633,
+      "corpus_shards": 1,
+      "partitions": {
+        "train": {
+          "queries": 2590,
+          "judgments": 110575,
+          "positive_pairs": 110575,
+          "positive_judgments": 110575,
+          "missing_corpus_judgments": 0,
+          "queries_without_available_positives": 0,
+          "positive_documents": 3588,
+          "documents_shared_by_queries": 3313,
+          "grades": [
+            1
+          ]
+        },
+        "validation": {
+          "queries": 324,
+          "judgments": 11385,
+          "positive_pairs": 11385,
+          "positive_judgments": 11385,
+          "missing_corpus_judgments": 0,
+          "queries_without_available_positives": 0,
+          "positive_documents": 3119,
+          "documents_shared_by_queries": 2568,
+          "grades": [
+            1,
+            2
+          ]
+        }
+      }
+    },
+    "CQADupstackGamingRetrieval": {
+      "corpus_documents": 45301,
+      "corpus_shards": 1,
+      "partitions": {
+        "train": {
+          "queries": 1276,
+          "judgments": 1828,
+          "positive_pairs": 1828,
+          "positive_judgments": 1828,
+          "missing_corpus_judgments": 0,
+          "queries_without_available_positives": 0,
+          "positive_documents": 1828,
+          "documents_shared_by_queries": 0,
+          "grades": [
+            1
+          ]
+        },
+        "validation": {
+          "queries": 0,
+          "judgments": 0,
+          "positive_pairs": 0,
+          "positive_judgments": 0,
+          "missing_corpus_judgments": 0,
+          "queries_without_available_positives": 0,
+          "positive_documents": 0,
+          "documents_shared_by_queries": 0,
+          "grades": []
+        }
+      }
+    },
+    "CQADupstackUnixRetrieval": {
+      "corpus_documents": 47382,
+      "corpus_shards": 1,
+      "partitions": {
+        "train": {
+          "queries": 857,
+          "judgments": 1321,
+          "positive_pairs": 1321,
+          "positive_judgments": 1321,
+          "missing_corpus_judgments": 0,
+          "queries_without_available_positives": 0,
+          "positive_documents": 1321,
+          "documents_shared_by_queries": 0,
+          "grades": [
+            1
+          ]
+        },
+        "validation": {
+          "queries": 0,
+          "judgments": 0,
+          "positive_pairs": 0,
+          "positive_judgments": 0,
+          "missing_corpus_judgments": 0,
+          "queries_without_available_positives": 0,
+          "positive_documents": 0,
+          "documents_shared_by_queries": 0,
+          "grades": []
+        }
+      }
+    },
+    "ClimateFEVERHardNegatives": {
+      "corpus_documents": 47416,
+      "corpus_shards": 1,
+      "partitions": {
+        "train": {
+          "queries": 800,
+          "judgments": 2437,
+          "positive_pairs": 2437,
+          "positive_judgments": 2437,
+          "missing_corpus_judgments": 0,
+          "queries_without_available_positives": 0,
+          "positive_documents": 917,
+          "documents_shared_by_queries": 281,
+          "grades": [
+            1
+          ]
+        },
+        "validation": {
+          "queries": 0,
+          "judgments": 0,
+          "positive_pairs": 0,
+          "positive_judgments": 0,
+          "missing_corpus_judgments": 0,
+          "queries_without_available_positives": 0,
+          "positive_documents": 0,
+          "documents_shared_by_queries": 0,
+          "grades": []
+        }
+      }
+    },
+    "FiQA2018": {
+      "corpus_documents": 57638,
+      "corpus_shards": 2,
+      "partitions": {
+        "train": {
+          "queries": 5500,
+          "judgments": 14166,
+          "positive_pairs": 14166,
+          "positive_judgments": 14166,
+          "missing_corpus_judgments": 0,
+          "queries_without_available_positives": 0,
+          "positive_documents": 14166,
+          "documents_shared_by_queries": 0,
+          "grades": [
+            1
+          ]
+        },
+        "validation": {
+          "queries": 500,
+          "judgments": 1238,
+          "positive_pairs": 1238,
+          "positive_judgments": 1238,
+          "missing_corpus_judgments": 0,
+          "queries_without_available_positives": 0,
+          "positive_documents": 1238,
+          "documents_shared_by_queries": 0,
+          "grades": [
+            1
+          ]
+        }
+      }
+    },
+    "SCIDOCS": {
+      "corpus_documents": 25657,
+      "corpus_shards": 1,
+      "partitions": {
+        "train": {
+          "queries": 800,
+          "judgments": 23942,
+          "positive_pairs": 3942,
+          "positive_judgments": 3942,
+          "missing_corpus_judgments": 0,
+          "queries_without_available_positives": 0,
+          "positive_documents": 3311,
+          "documents_shared_by_queries": 368,
+          "grades": [
+            0,
+            1
+          ]
+        },
+        "validation": {
+          "queries": 0,
+          "judgments": 0,
+          "positive_pairs": 0,
+          "positive_judgments": 0,
+          "missing_corpus_judgments": 0,
+          "queries_without_available_positives": 0,
+          "positive_documents": 0,
+          "documents_shared_by_queries": 0,
+          "grades": []
+        }
+      }
+    },
+    "SciFact": {
+      "corpus_documents": 5183,
+      "corpus_shards": 1,
+      "partitions": {
+        "train": {
+          "queries": 809,
+          "judgments": 919,
+          "positive_pairs": 919,
+          "positive_judgments": 919,
+          "missing_corpus_judgments": 0,
+          "queries_without_available_positives": 0,
+          "positive_documents": 565,
+          "documents_shared_by_queries": 248,
+          "grades": [
+            1
+          ]
+        },
+        "validation": {
+          "queries": 0,
+          "judgments": 0,
+          "positive_pairs": 0,
+          "positive_judgments": 0,
+          "missing_corpus_judgments": 0,
+          "queries_without_available_positives": 0,
+          "positive_documents": 0,
+          "documents_shared_by_queries": 0,
+          "grades": []
+        }
+      }
+    }
+  },
+  "provenance": {
+    "timestamp_utc": "2026-11-10T12:15:14+00:00",
+    "git_commit": "499b34c7f594bc56dff94f119cb29a4b4cbd1830",
+    "git_dirty": false,
+    "upstream_commit": "3b2d4d27ec1f9d70af943806ece8dfd665b8d28b",
+    "slurm_job_id": null,
+    "host": "int4.local.snellius.surf.nl",
+    "gpu": null,
+    "python": "3.11.18",
+    "packages": {
+      "torch": "2.7.0",
+      "transformers": "4.55.0",
+      "sentence-transformers": "5.0.0",
+      "mteb": "1.38.39",
+      "peft": "0.15.2"
+    },
+    "config": {
+      "exp_id": "E3",
+      "run_name": "training_data_fp32",
+      "dense_config": "configs/E1_dense_both.toml",
+      "dtype": "float32",
+      "split_manifest": "results/E3/split_manifest.json",
+      "embedding_dim": 2560,
+      "corpus_chunk_size": 50000,
+      "tasks": [
+        "ArguAna",
+        "NFCorpus",
+        "CQADupstackGamingRetrieval",
+        "CQADupstackUnixRetrieval",
+        "ClimateFEVERHardNegatives",
+        "FiQA2018",
+        "SCIDOCS",
+        "SciFact"
+      ],
+      "resolved_dense_config": {
+        "exp_id": "E1",
+        "run_name": "qwen3_4b_dense_prompt_both_fp32",
+        "model": "Qwen/Qwen3-Embedding-4B",
+        "revision": "5cf2132abc99cad020ac570b19d031efec650f2b",
+        "max_seq_length": 512,
+        "batch_size": 16,
+        "prompt_mode": "both",
+        "paper_target_mean": 58.37,
+        "dtype": "float32"
+      }
+    }
+  },
+  "source_code_sha256": {
+    "build_training_data.py": "c4dc1fc9523b5d6d51cd5ed6bff8f88c7baf6f3eb0f5ce1a993e6ad4b8711c5a",
+    "splits.py": "dfcff404f7ed00bfc7fb95a8a10f36c5c03824b41b3eb6ba0cfe005e08523f1e",
+    "training_data.py": "d40cca677c535f5d761f15208018f08d77bd6b283932665454833c0b550a38ae"
+  },
+  "dataset_path": "/gpfs/scratch1/shared/scur0944/csrv2/training_data/training_data_fp32/5cc3c3efd1a81ab343137e5832cd9763bc9f3ff2bf66b7586f01a66edc43f87e/dataset.json",
+  "dataset_sha256": "9a35f1f0336e1c7f7dbcdf4e426cfa608b8392f8ad4f9cf7578d7d32436ae332"
+}
