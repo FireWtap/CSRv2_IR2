@@ -1,0 +1,72 @@
+{
+  "provenance": {
+    "git_commit": "a84d6bb618258686db2eb55da18fb5e44455ae1a",
+    "upstream_commit": "3b2d4d27ec1f9d70af943806ece8dfd665b8d28b",
+    "config": {
+      "exp_id": "E5",
+      "run_name": "linear_full_fp32",
+      "dataset": "/scratch-shared/scur0944/csrv2/training_data/training_data_fp32/5cc3c3efd1a81ab343137e5832cd9763bc9f3ff2bf66b7586f01a66edc43f87e/dataset.json",
+      "seed": 1227,
+      "embedding_dim": 2560,
+      "hidden_dim": 10240,
+      "batch_size": 256,
+      "auxk": 1024,
+      "dead_threshold": 30,
+      "initial_k": 64,
+      "target_k": 2,
+      "evaluation_k": [
+        2,
+        4,
+        16,
+        64,
+        2560
+      ],
+      "epochs": 128,
+      "lr": 2e-05,
+      "weight_decay": 0.0001,
+      "beta": 0.1,
+      "gamma": 1.0,
+      "cpu_threads": 8,
+      "log_every_steps": 100,
+      "checkpoint_every_steps": 1000,
+      "checkpoint_every_seconds": 600
+    },
+    "slurm_job_id": "29105826",
+    "timestamp_utc": "2026-11-11T08:34:30.385901+00:00",
+    "source_sha256": {
+      "src/csrv2_repro/sae_train.py": "86c92d21e7cd2ba52dd31af09da6086536a003065dfc3890fd188a8335aeef12",
+      "src/csrv2_repro/sae_pilot.py": "9f87b6a6d917eed63eabbabb3116e3695d166609a2ab1b125b7677ffb88a2cda",
+      "src/csrv2_repro/sae_sampling.py": "4e9870ba9e881f8dda8967e68ae4ec8a75be430bffab3976282190ed8b72c53a",
+      "src/csrv2_repro/upstream_sae.py": "2b4c5caf7e13de5a76d590a39e4c80466bb0bf9bbb6596350e260415cf9be3d8",
+      "tests/test_sae_train.py": "403b27c45d2663cccdd99aa401b2acd571f849e893d05125bf362433b8f1533d",
+      "configs/E5_linear_full.toml": "90c24f323417154ff6eb5a59bdadee7caa7c35653bb6ef6ace5ad7d35cdd4952",
+      "jobs/snellius/E5_linear_calibrate.job": "4839292a76263773b1e4b8f6019f5750e0f6417f3ba76afe3d3ac725579b0043",
+      "jobs/snellius/E5_linear_full.job": "5674e81c0e23c37f5d195a32e7a9982c906ee0bed36c27222a8c89901fff05f9"
+    }
+  },
+  "full_suite_before_final_timing_extension": {
+    "passed": 62,
+    "seconds": 75.02
+  },
+  "updated_trainer_tests_after_timing_extension": {
+    "passed": 7,
+    "seconds": 16.56
+  },
+  "ruff": "passed",
+  "shell_syntax": "passed",
+  "third_party_modified": false,
+  "real_data_preflight": {
+    "audited_epochs": 2,
+    "epoch_batch_counts": [
+      1902,
+      1902
+    ],
+    "row_appearances_per_epoch": [
+      486688,
+      486688
+    ],
+    "dataset_sha256": "9a35f1f0336e1c7f7dbcdf4e426cfa608b8392f8ad4f9cf7578d7d32436ae332",
+    "manifest_sha256": "ec414bd788251a8dfd2f4444adef9991a49430e3cc890a95183d55fc124b3db5"
+  },
+  "full_schedule": "All 128 actual epoch plans will be audited and hashed before the first GPU optimizer step"
+}
