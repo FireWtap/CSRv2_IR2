@@ -161,3 +161,15 @@ as a conservative proxy, not a claimed exact prediction at later k. Multiply the
 runtime by 1.25 and round up to a minute. On successful calibration, automatically submit exactly one
 source-guarded continuation with that limit and the saved optimizer/sampler cursor. Scientific recipe
 and fixed final checkpoint selection remain D-014; only the reservation plan changes. Status: active.
+
+## D-016 (2026-11-11, Samu / codex) Direct full training with user-selected six-hour limit
+User rejected another timing allocation because queue turnaround is slow, then explicitly requested
+six hours and immediate scheduling. Cancel pending calibration 29105826 (zero runtime) and submit
+E5_linear_full.job directly, fresh, with 06:00:00; no calibration dependency or extra smoke. This
+supersedes D-015's two-stage launch and D-014's 24-hour reservation. Existing pilot job 29072175 took
+487 seconds overall; each head saw 256x256=65536 row appearances, with training-loop times 427.78s
+and 11.58s. Extrapolating the slower rate over one 1902-batch epoch and the warm rate over 127 epochs,
+plus 300s overhead, gives approximately four hours; this assumes transient first-use/data-access
+costs and is not a validated throughput model. User's six-hour choice overrides the earlier exact
+25% margin request. Scientific recipe, 128-epoch schedule, frozen Qwen cache and checkpointing are
+unchanged. Status: active.

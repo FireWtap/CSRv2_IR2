@@ -3,6 +3,7 @@
 #SBATCH --partition=gpu_a100
 #SBATCH --gpus-per-node=1
 #SBATCH --cpus-per-task=18
+#SBATCH --time=06:00:00
 #SBATCH --signal=USR1@120
 #SBATCH --output=outputs/slurm/%x-%j.out
 
@@ -11,8 +12,8 @@ cd "$SLURM_SUBMIT_DIR"
 source jobs/snellius/env.sh
 : "${TRAIN_COMMIT:?Set TRAIN_COMMIT to the reviewed source commit}"
 : "${TRAIN_OUTPUT:?Set TRAIN_OUTPUT to a unique scratch run directory}"
-# Submission must supply --time from runtime_estimate.json (+25%, rounded up to a minute).
-: "${TRAIN_TIME_LIMIT:?Set TRAIN_TIME_LIMIT to the measured estimate plus 25 percent}"
+# D-016: user selected six hours for direct full training, without another timing job.
+: "${TRAIN_TIME_LIMIT:?Set TRAIN_TIME_LIMIT to the requested walltime}"
 git diff --quiet "$TRAIN_COMMIT" -- src configs jobs third_party pyproject.toml uv.lock
 test -z "$(git status --porcelain -- src configs jobs third_party pyproject.toml uv.lock)"
 export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"

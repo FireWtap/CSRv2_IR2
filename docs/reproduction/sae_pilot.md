@@ -155,25 +155,24 @@ queries. This single-head protocol does not establish the authors' row-to-model 
 epoch/batch cursor, aggregate losses, full schedule identities and code/data hashes.
 It checkpoints every 1000 steps, 600 seconds, at each epoch end and on a graceful
 termination request. The job requests one A100 and sends a warning signal 120
-seconds before its measured time limit (D-015 below). The latest checkpoint is replaced;
+seconds before its six-hour time limit (D-016). The latest checkpoint is replaced;
 the final fixed-budget checkpoint is used without held-out model selection.
 `progress.json`, `schedule.json`, per-attempt provenance and the completion
 `summary.json` remain beside it on scratch. A stopped run exits 75, not success.
 
-First submit `jobs/snellius/E5_linear_calibrate.job` with `TRAIN_COMMIT` set to the
-reviewed source commit and `TRAIN_OUTPUT` set to a unique scratch directory. It
-trains the first two real epochs under the full schedule, saves their timings and
-automatically submits one continuation after successful calibration. Estimate the
-remaining steps from the complete second epoch (including data loading, packing,
-finite checks and checkpoint writes), adding measured startup and the cold first
-epoch's excess in case the next allocation lands on a fresh node. Multiply by
-1.25 and round up to a whole minute for the continuation's SLURM time limit.
-This uses near-initial k throughput as a conservative proxy; later sparsity can
-change actual runtime. The bounded calibration reserves 20 minutes.
+Submit `jobs/snellius/E5_linear_full.job` directly with `TRAIN_COMMIT` set to the
+reviewed source commit, `TRAIN_OUTPUT` set to a unique scratch directory and
+`TRAIN_TIME_LIMIT=06:00:00`. The user rejected another queue cycle and explicitly
+selected six hours (D-016). Calibration job 29105826 was cancelled while pending,
+with zero runtime; its two-stage submission path is no longer the active plan.
+Using the previous pilot's slower first-head rate for one epoch and its warmed-up
+second-head rate for the other 127, plus five minutes of overhead, estimates about
+four hours. This assumes the timing difference mainly reflects first-use/data
+access costs; that cause was not isolated. The six-hour limit is the user's choice.
 
 To resume an interrupted run manually, submit `E5_linear_full.job` with those same
-values plus `RESUME=1`, `TRAIN_TIME_LIMIT` and matching `sbatch --time` from the
-remaining-runtime estimate. Recalculate for the actual remaining work if needed.
+values plus `RESUME=1`; adjust `TRAIN_TIME_LIMIT` and matching `sbatch --time` for
+the actual remaining work if needed.
 Code, configuration, data identity and regenerated batch order must match. A file
 lock rejects concurrent writers. Seven new CPU tests check bitwise optimizer/model
 resume parity across epoch boundaries, the annealing transition, partial batches
