@@ -26,4 +26,6 @@ wandb/
 slurm-*.out
 
 # mteb per-query rankings (MBs); the per-query nDCG CSVs derived from them are committed instead
-results/**/*_predictions.json
+# D-009: results never go to git; shared copy on /scratch-shared/scur0933/csrv2/predictions/
+results/*
+!results/.gitkeep

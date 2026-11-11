@@ -24,8 +24,10 @@ Numbers, task list and hyperparameters: `docs/reproduction/targets.md`. Experime
 - Always run Python through `uv run` (upstream spawns bare `python`, which must resolve to the venv).
 - Large artifacts (embeddings, checkpoints, HF cache, run dirs) go in `outputs/` locally or
   `$SCRATCH_ROOT` on Snellius. Both are gitignored. Never commit `*.npz`, `*.pth`, `*.safetensors`.
-- Commit results as small files: `results/<EXP_ID>/*.json|csv` with the git commit, upstream commit,
-  config and SLURM job id that produced them. A number not in `results/` does not exist.
+- **Never commit or push results** (D-009). Runs write `results/<EXP_ID>/<run>/` (summary.json with the git
+  commit, upstream commit, config and SLURM job id); `results/` is gitignored. When a run is done, copy it to
+  shared scratch `/scratch-shared/scur0933/csrv2/predictions/<EXP_ID>/<run>/` (`cp`, not `mv`, so the shared ACLs
+  apply). A number not there does not exist.
 - Any deviation from the paper (different k, data, hyperparameter, metric) needs a `D-NNN` entry.
 
 ## Ledger (`ledger/`) — the shared memory between people and agents
@@ -37,7 +39,7 @@ Numbers, task list and hyperparameters: `docs/reproduction/targets.md`. Experime
 
 Token discipline:
 - One line per log entry; put details in the file the pointer names, not in the ledger.
-- Never paste tables, logs, stack traces or diffs into the ledger. Point to `results/`, a commit or a job id.
+- Never paste tables, logs, stack traces or diffs into the ledger. Point to a results path, a commit or a job id.
 - Never read the whole `log.md`; tail or grep it. Do not re-read files the ledger already summarises.
 - When `log.md` passes ~300 lines, move everything but the last 50 lines to `ledger/archive/log-<date>.md`
   in a dedicated commit.
@@ -54,7 +56,7 @@ src/csrv2_repro/          our package; entry points: uv run python -m csrv2_repr
 configs/                  one TOML config per run, named <EXP_ID>_<desc>.toml (stdlib tomllib)
 scripts/                  small CLI helpers (fetch_paper.sh, upstream_rundir.sh)
 jobs/snellius/            env.sh, setup_env.sh, template.job, <EXP_ID>_*.job
-results/<EXP_ID>/         committed metrics (small)
+results/<EXP_ID>/         run outputs, gitignored; shared copy on scratch (D-009)
 outputs/                  gitignored: embeddings, ckpts, run dirs, slurm logs
 third_party/CSRv2         upstream submodule (Y-Research-SBU/CSRv2). Read-only.
 ```

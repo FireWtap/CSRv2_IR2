@@ -9,7 +9,7 @@ for these two users only; the course-wide Unix groups have no access.
 |------|------|------|
 | `/scratch-shared/scur0933/csrv2/emb_cache/` | Embedding cache (`CachedEncoder`), one dir per run name, e.g. `qwen3_4b_dense_prompt_query_fp32/<Task>/{query,document}-<n>-<hash>.npy` | 7.4 GB |
 | `/scratch-shared/scur0933/csrv2/hf/` | `HF_HOME`: Qwen3-Embedding-4B, CSRv2-retrieval ckpt, mteb datasets | 8.4 GB |
-| `/scratch-shared/scur0933/csrv2/predictions/` | `*_predictions.json` (per-query top-100 rankings, gitignored), same layout as `results/` | 0.5 GB |
+| `/scratch-shared/scur0933/csrv2/predictions/` | All results (summary.json, mteb outputs, `*_predictions.json`), same layout as `results/`; results are not in git (D-009) | 0.5 GB |
 
 Not shared: `uv-cache/` and `wandb/` stay per user.
 
@@ -35,7 +35,7 @@ Delete `*.old` only after checking nothing in them is missing from the shared co
   Example: `uv run python -m csrv2_repro.e2_mrl --config configs/E2_mrl_query.toml --dtype float32` runs on
   cached E1 embeddings. Runs available: `qwen3_4b_dense_prompt_{query,both}_fp32` (8 retrieval tasks),
   `released_ckpt_fp32` (E6b, 8 tasks), and `qwen3_4b_dense_{bf16,fp32}`, `released_ckpt_{bf16,fp32}` (E0/E1p, NFCorpus+SciFact).
-- **Predictions into your repo checkout** (for paired tests): `rsync -a /scratch-shared/scur0933/csrv2/predictions/ results/`.
+- **Results into your repo checkout** (summaries, paired tests): `rsync -a /scratch-shared/scur0933/csrv2/predictions/ results/`.
   They are gitignored, so they never get committed.
 
 ## Rules
@@ -47,4 +47,4 @@ Delete `*.old` only after checking nothing in them is missing from the shared co
 - If access breaks: `getfacl /scratch-shared/scur0933/csrv2/emb_cache` should list both users with `rwx`.
   scur0933 must fix it (only the owner can change ACLs on these dirs).
 - Scratch is not backed up and is purged after a period of inactivity (check Snellius docs). Anything that
-  matters goes in `results/` (small files) and git.
+  matters is code and configs in git; copy result dirs you need to keep somewhere backed up.

@@ -54,3 +54,10 @@ English subsets only (common.HF_SUBSETS; STS17 = en-en, since upstream's hf_subs
 test split; fp32 (D-007); prompts as D-004 (instruction on every text for symmetric tasks, which equals upstream,
 queries only for reranking); metrics accuracy / V-measure / cosine Spearman / cosine AP (paper App. B; mteb's
 main_score is max_ap) / MAP, x100. Status: active.
+
+## D-009 (2026-11-11, francesco) Results are not committed to git
+Supersedes AGENTS.md's "commit results as small files". `results/` is gitignored (except .gitkeep) and untracked;
+every result dir lives on shared scratch at /scratch-shared/scur0933/csrv2/predictions/<EXP_ID>/<run>/ (same layout,
+readable by scur0911 and scur0944). Runs still write results/ locally with full provenance in summary.json; copy
+(not mv) to scratch when done. Earlier commits on main still hold E0/E1p results in history; not rewritten.
+Status: active.
