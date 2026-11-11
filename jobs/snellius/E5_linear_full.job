@@ -1,0 +1,26 @@
+#!/bin/bash
+#SBATCH --job-name=E5-linear-k2
+#SBATCH --partition=gpu_a100
+#SBATCH --gpus-per-node=1
+#SBATCH --cpus-per-task=18
+#SBATCH --signal=USR1@120
+#SBATCH --output=outputs/slurm/%x-%j.out
+
+set -euo pipefail
+cd "$SLURM_SUBMIT_DIR"
+source jobs/snellius/env.sh
+: "${TRAIN_COMMIT:?Set TRAIN_COMMIT to the reviewed source commit}"
+: "${TRAIN_OUTPUT:?Set TRAIN_OUTPUT to a unique scratch run directory}"
+# Submission must supply --time from runtime_estimate.json (+25%, rounded up to a minute).
+: "${TRAIN_TIME_LIMIT:?Set TRAIN_TIME_LIMIT to the measured estimate plus 25 percent}"
+git diff --quiet "$TRAIN_COMMIT" -- src configs jobs third_party pyproject.toml uv.lock
+test -z "$(git status --porcelain -- src configs jobs third_party pyproject.toml uv.lock)"
+export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"
+export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
+export CUBLAS_WORKSPACE_CONFIG=:4096:8 OMP_NUM_THREADS=8
+export TRAIN_JOB_START_EPOCH="$(date +%s)"
+resume_args=()
+if [[ "${RESUME:-0}" == 1 ]]; then resume_args=(--resume); fi
+# A Slurm step receives the pre-time-limit signal and saves at the next batch boundary.
+srun uv run --frozen --no-sync python -m csrv2_repro.sae_train \
+    --config configs/E5_linear_full.toml --output "$TRAIN_OUTPUT" "${resume_args[@]}"

@@ -1,0 +1,32 @@
+#!/bin/bash
+#SBATCH --job-name=E5-linear-timing
+#SBATCH --partition=gpu_a100
+#SBATCH --gpus-per-node=1
+#SBATCH --cpus-per-task=18
+#SBATCH --time=00:20:00
+#SBATCH --signal=USR1@120
+#SBATCH --output=outputs/slurm/%x-%j.out
+
+set -euo pipefail
+cd "$SLURM_SUBMIT_DIR"
+source jobs/snellius/env.sh
+: "${TRAIN_COMMIT:?Set TRAIN_COMMIT to the reviewed source commit}"
+: "${TRAIN_OUTPUT:?Set TRAIN_OUTPUT to a unique scratch run directory}"
+git diff --quiet "$TRAIN_COMMIT" -- src configs jobs third_party pyproject.toml uv.lock
+test -z "$(git status --porcelain -- src configs jobs third_party pyproject.toml uv.lock)"
+export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"
+export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
+export CUBLAS_WORKSPACE_CONFIG=:4096:8 OMP_NUM_THREADS=8
+export TRAIN_JOB_START_EPOCH="$(date +%s)"
+# These are the first two epochs of the real 128-epoch schedule, not discarded work.
+srun uv run --frozen --no-sync python -m csrv2_repro.sae_train \
+    --config configs/E5_linear_full.toml --output "$TRAIN_OUTPUT" --calibrate
+export TRAIN_TIME_LIMIT
+TRAIN_TIME_LIMIT=$(uv run --frozen --no-sync python -c \
+    'import json,os; print(json.load(open(os.environ["TRAIN_OUTPUT"]+"/runtime_estimate.json"))["slurm_time"])')
+export RESUME=1
+# Queue exactly one continuation after successful calibration; the source guard applies again.
+continuation=$(sbatch --parsable --dependency="afterok:$SLURM_JOB_ID" \
+    --time="$TRAIN_TIME_LIMIT" jobs/snellius/E5_linear_full.job)
+printf '%s\n' "$continuation" > "$TRAIN_OUTPUT/continuation_job_id.txt"
+printf 'Submitted continuation %s with measured +25%% time limit %s\n' "$continuation" "$TRAIN_TIME_LIMIT"

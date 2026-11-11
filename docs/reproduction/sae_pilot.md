@@ -122,7 +122,7 @@ SLURM reported peak host RSS of 2,416,579 KiB (about 2.30 GiB).
 
 No held-out retrieval scores were measured. Passing these pilots establishes that
 the checked training paths execute correctly, not that training has converged or
-that the paper's retrieval numbers have been reproduced. No full run was launched.
+that the paper's retrieval numbers have been reproduced. These jobs were bounded pilots only.
 
 ## Training target versus inference k
 
@@ -139,3 +139,44 @@ The k=16 pilot exercises a second sparsity regime; it does not settle the full-r
 policy or require a separate full training for each reported inference k. A shared
 target-2 head evaluated across all five k values is a valid experimental design;
 matching the authors' table-generation policy still needs supporting evidence.
+
+## Full single-head run (D-014, 2026-11-11)
+
+The user selected one fresh CSRv2-linear head annealed from 64 to 2, with the
+original frozen Qwen embeddings and no backbone/LoRA training. The full recipe is
+`configs/E5_linear_full.toml`: printed 128 epochs, batch 256, and the same verified
+loss, sampler and remaining hyperparameters as the pilots. All 128 epoch plans
+are audited before the global step budget is fixed; the original annealing
+formula reaches 2 at 70% of that budget. The pilot checkpoints are not resumed.
+The final head will be evaluated at all five k values on the protected evaluation
+queries. This single-head protocol does not establish the authors' row-to-model mapping.
+
+`sae_train.py` saves an atomic `checkpoint.pth` with model, optimizer, CPU/CUDA RNG,
+epoch/batch cursor, aggregate losses, full schedule identities and code/data hashes.
+It checkpoints every 1000 steps, 600 seconds, at each epoch end and on a graceful
+termination request. The job requests one A100 and sends a warning signal 120
+seconds before its measured time limit (D-015 below). The latest checkpoint is replaced;
+the final fixed-budget checkpoint is used without held-out model selection.
+`progress.json`, `schedule.json`, per-attempt provenance and the completion
+`summary.json` remain beside it on scratch. A stopped run exits 75, not success.
+
+First submit `jobs/snellius/E5_linear_calibrate.job` with `TRAIN_COMMIT` set to the
+reviewed source commit and `TRAIN_OUTPUT` set to a unique scratch directory. It
+trains the first two real epochs under the full schedule, saves their timings and
+automatically submits one continuation after successful calibration. Estimate the
+remaining steps from the complete second epoch (including data loading, packing,
+finite checks and checkpoint writes), adding measured startup and the cold first
+epoch's excess in case the next allocation lands on a fresh node. Multiply by
+1.25 and round up to a whole minute for the continuation's SLURM time limit.
+This uses near-initial k throughput as a conservative proxy; later sparsity can
+change actual runtime. The bounded calibration reserves 20 minutes.
+
+To resume an interrupted run manually, submit `E5_linear_full.job` with those same
+values plus `RESUME=1`, `TRAIN_TIME_LIMIT` and matching `sbatch --time` from the
+remaining-runtime estimate. Recalculate for the actual remaining work if needed.
+Code, configuration, data identity and regenerated batch order must match. A file
+lock rejects concurrent writers. Seven new CPU tests check bitwise optimizer/model
+resume parity across epoch boundaries, the annealing transition, partial batches
+and unsupervised batches, reject incompatible identities/cursors/schedules, and
+check the remaining-work estimate and 25% margin.
+Submission and collected results are recorded in `results/E5/linear_full_fp32/`.

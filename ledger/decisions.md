@@ -133,3 +133,31 @@ into 70% of pilot steps to exercise the entire schedule; this is not the full pa
 accuracy result. Check finite gradients, reconstruction-only exclusion, saved inference at all five
 evaluation k values, and exact next-step optimizer-resume parity. Artifacts stay on scratch, small
 metrics in results/E5. Full epoch budget and highest-k training policy remain open. Status: active.
+
+## D-014 (2026-11-11, Samu / codex) One full CSRv2-linear head, annealed 64 to 2
+User explicitly selected one linear model trained from k=64 to k=2, without backbone fine-tuning.
+Train a fresh SAE on the original frozen Qwen3-Embedding-4B fp32 cache; do not resume the compressed
+pilot schedule or load LoRA. Use the printed Qwen SAE budget of 128 epochs and batch size 256,
+retaining D-013's lr/weight decay/auxk/beta/gamma, D-007 through D-012's data/loss corrections and
+pair-frequency sampler. This supersedes D-003's script-default fallback for E5: there is no evidence
+that the printed epoch and batch values were swapped, and backbone trainer_state cannot settle SAE
+training epochs. Audit all 128 deterministic epoch plans, sum their actual batch counts, then use the
+original global-step annealing formula reaching k=2 at 70% of that budget and holding it thereafter.
+Evaluate the same final head at k={2,4,16,64,2560} later; no per-k retraining or held-out checkpoint
+selection. This is the user's chosen single-head reproduction protocol, not a verified mapping of
+the authors' Table 3 rows to checkpoints. Retain upstream imports and documented D-011 repairs.
+Use one A100, fp32 without AMP/TF32; reserve 24 hours (a limit, not a runtime prediction), checkpoint
+at epoch ends, every 1000 steps or 600 seconds, and before graceful time-limit exit. Save optimizer,
+RNG, exact sampler cursor and source/data identities for strict resume; final checkpoint is selected
+by fixed budget. Pilot timings were confounded and do not establish full-run throughput. Status: active.
+
+## D-015 (2026-11-11, Samu / codex) Measured runtime plus 25%, replacing the 24-hour reservation
+User explicitly rejected D-014's 24-hour limit and requested a good estimate plus 25%. No full job
+had been submitted. Calibrate with the first two actual epochs of the 128-epoch schedule (20-minute
+bounded timing allocation), retaining that checkpoint for continuation. Estimate remaining steps
+from complete second-epoch walltime, including data access/packing/checkpointing; add measured
+startup and first-epoch excess to account for a cold continuation node. Use near-initial k throughput
+as a conservative proxy, not a claimed exact prediction at later k. Multiply the estimated remaining
+runtime by 1.25 and round up to a minute. On successful calibration, automatically submit exactly one
+source-guarded continuation with that limit and the saved optimizer/sampler cursor. Scientific recipe
+and fixed final checkpoint selection remain D-014; only the reservation plan changes. Status: active.

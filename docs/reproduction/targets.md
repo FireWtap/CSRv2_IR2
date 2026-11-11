@@ -62,7 +62,7 @@ CSR < +anneal (small gain) < +supervise < CSRv2-linear (anneal+supervise) < CSRv
 | CSRv2        | yes    | yes       | yes      | 68.08 | 66.70 | 65.22 | 63.76 | 61.01 | 58.34 |
 
 ## Hyperparameters for Qwen3-Embedding-4B (paper Tables 6-7, App. B.3)
-- CSRv2 SAE: d=2560, h=10240, lr=2e-5, **epoch=128 (suspicious, likely swapped with batch; see D-003)**,
+- CSRv2 SAE: d=2560, h=10240, lr=2e-5, **epoch=128 (as printed; selected for E5 in D-014)**,
   batch=256, k_aux=1024, beta(aux)=0.1, gamma(SpSCL)=1, K trained = {2,4,16,64,4096}, weight decay 1e-4, Adam.
 - Loss: L(k_t) + 1/8 L(4k_t) + beta L_aux + gamma L_SpSCL(k_t). Tied encoder/decoder.
 - k-annealing: k_init = 64 if k < 64 else 4k; linear decay reaching target k at 70% of steps.
