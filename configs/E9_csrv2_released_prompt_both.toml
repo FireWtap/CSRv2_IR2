@@ -1,0 +1,58 @@
+# E9 prompt check (D-004, D-008): released CSRv2-reranking with the instruction on queries AND candidates (upstream
+# eval_all()). Shares the query-only run's cache (content-hashed), so prompted queries are reused. --task-type reranking only.
+exp_id = "E9"
+run_name = "csrv2_released_prompt_both_fp32"
+cache_name = "csrv2_released_fp32_reranking"
+dtype = "float32"          # D-007
+batch_size = 16            # upstream uses 2; only affects padding (D-004)
+prompt_mode = "both"
+ks = [2, 4, 16, 64, 2560]
+faithful_ks = []
+
+[models.classification]
+model = "Y-Research-Group/CSRv2-classification"
+revision = "b82548969c960a796026ba22491d7de7a7de9f58"
+[models.clustering]
+model = "Y-Research-Group/CSRv2-clustering"
+revision = "2eb2bed65f90f0d3e9a357d93e46d6a87e7fc066"
+[models.sts]
+model = "Y-Research-Group/CSRv2-sts"
+revision = "3179e736e43ff87908d81fae9f06383d2faa0f69"
+[models.reranking]
+model = "Y-Research-Group/CSRv2-reranking"
+revision = "e3d813824042387ec574029072e0af0615298d20"
+[models.pair_classification]
+model = "Y-Research-Group/CSRv2-pair_classification"
+revision = "47751abd2ca2e8cea15e0ace4c62f1def55480fa"
+
+# Table 3, CSRv2 rows
+[paper_target_mean_by_k.classification]
+2 = 76.22
+4 = 80.20
+16 = 82.03
+64 = 84.28
+2560 = 85.58
+[paper_target_mean_by_k.clustering]
+2 = 46.02
+4 = 48.27
+16 = 53.86
+64 = 54.57
+2560 = 55.91
+[paper_target_mean_by_k.sts]
+2 = 74.88
+4 = 77.94
+16 = 82.63
+64 = 86.32
+2560 = 88.47
+[paper_target_mean_by_k.pair_classification]
+2 = 75.24
+4 = 82.28
+16 = 90.42
+64 = 90.90
+2560 = 91.39
+[paper_target_mean_by_k.reranking]
+2 = 59.52
+4 = 62.98
+16 = 69.89
+64 = 71.64
+2560 = 71.98

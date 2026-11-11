@@ -2,6 +2,7 @@
 # E9 MRL for one non-retrieval Table 3 task type (D-008): truncate the E9 dense cache to k and score.
 # No encoding (--cache-only, backbone stays on CPU), so a MIG slice is enough. Submit after E9_pass PART=dense:
 #   sbatch --dependency=afterok:<dense jobid> --export=ALL,TASK_TYPE=sts jobs/snellius/E9_mrl.job
+# CONFIG overrides configs/E9_mrl.toml (e.g. configs/E9_mrl_prompt_both.toml).
 #SBATCH --job-name=e9_mrl
 #SBATCH --partition=gpu_mig
 #SBATCH --gpus-per-node=1
@@ -18,5 +19,5 @@ source jobs/snellius/env.sh
 # HF API anonymously get rate-limited (429), so run offline.
 export HF_HUB_OFFLINE=1 HF_DATASETS_OFFLINE=1
 echo "commit $(git rev-parse --short HEAD) | upstream $(git -C third_party/CSRv2 rev-parse --short HEAD) | node $(hostname) | type $TASK_TYPE"
-uv run --frozen python -m csrv2_repro.e2_mrl --config configs/E9_mrl.toml --task-type "$TASK_TYPE" --cache-only
+uv run --frozen python -m csrv2_repro.e2_mrl --config "${CONFIG:-configs/E9_mrl.toml}" --task-type "$TASK_TYPE" --cache-only
 echo "=== done ($(date +%T))"
