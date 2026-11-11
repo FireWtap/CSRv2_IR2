@@ -38,3 +38,4 @@ Read with `tail -n 30 ledger/log.md`, search with `grep -n "E4" ledger/log.md`.
 2026-11-08 | francesco/claude | E9 | BUG | MRL pair_classification cache miss: mteb dedups via list(set()), order varies with hash seed; fix: PYTHONHASHSEED=0 in env.sh | commit e7afdb9
 2026-11-08 | francesco/claude | E9 | NOTE | resubmitted csrv2 x5 (28994384-87, 28994389) + dense/MRL pair_classification (28994388, 28994390) | commit e7afdb9
 2026-11-08 | francesco/claude | E9 | BUG | MRL pair_classification missed cache again: dense resubmit loaded old mteb results, never re-encoded; resubmitted dense with EXTRA_ARGS=--overwrite (28997519) + MRL afterok (28997520) | jobs/snellius/E9_pass.job
+2026-11-11 | francesco/claude | E9 | NOTE | reranking prompt check, instruction on queries+candidates (upstream protocol) vs query-only: dense=29111517 csrv2=29111521 mrl=29111525 (afterok dense) | configs/E9_*_prompt_both.toml
