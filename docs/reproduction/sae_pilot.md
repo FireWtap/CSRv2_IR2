@@ -97,3 +97,45 @@ commit, allowing ledger/results-only commits while queued, and writes to
 files include source/config hashes, repository/upstream commits, SLURM id, dataset and
 split-manifest hashes, per-step losses and resource use. Only small JSON evidence is
 copied into `results/E5/`; checkpoints remain on scratch.
+
+## Completed pilot: job 29072175
+
+The job completed on 2026-11-10 at 21:11:28 Europe/Amsterdam, exit 0:0, after
+8m07s on gcn42 (A100-SXM4-40GB). Both targets completed all 256 steps, using
+batch size 256 throughout and covering all eight tasks. Finite-gradient checks,
+reconstruction-only exclusion, exact inference parity with Sentence Transformers
+at all five evaluation k values, and exact next-step optimizer restoration passed.
+Checkpoint and source hashes, saved optimizer steps, finite weights/moments, tied
+storage, full step histories, and sampler identities were independently checked
+on 2026-11-11. Evidence: `results/E5/linear_pilot_fp32/verification.json`.
+
+| Target k | Training-loop seconds | Median step seconds | Overall peak allocated GPU GiB |
+|---|---:|---:|---:|
+| 2 | 427.78 | 1.420 | 1.219 |
+| 16 | 11.58 | 0.045 | 1.707 |
+
+These are sequential runs over the same batches. Timing includes host data access
+and first-use costs; cache and run-order effects were not isolated. The difference
+does not establish that k=16 is intrinsically faster and is unsuitable for direct
+full-run extrapolation. Peak memory includes checkpoint/evaluation diagnostics.
+SLURM reported peak host RSS of 2,416,579 KiB (about 2.30 GiB).
+
+No held-out retrieval scores were measured. Passing these pilots establishes that
+the checked training paths execute correctly, not that training has converged or
+that the paper's retrieval numbers have been reproduced. No full run was launched.
+
+## Training target versus inference k
+
+The two pilots are independent heads: one anneals 64 to 2, the other 64 to 16.
+A single head can subsequently be evaluated at every supported inference k.
+Training toward k=16 is not necessary to evaluate at k=16. It changes the terminal
+objective: supervised features at 16 and reconstruction at 16/64, versus supervised
+features at 2 and reconstruction at 2/8 for target 2. Earlier annealing exposure
+does not make these terminal objectives identical. The multi-TopK reconstruction
+loss promotes reuse across inference k, but does not guarantee equal performance
+to a head optimized specifically for another target.
+
+The k=16 pilot exercises a second sparsity regime; it does not settle the full-run
+policy or require a separate full training for each reported inference k. A shared
+target-2 head evaluated across all five k values is a valid experimental design;
+matching the authors' table-generation policy still needs supporting evidence.

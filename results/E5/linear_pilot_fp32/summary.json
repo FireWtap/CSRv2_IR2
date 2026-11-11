@@ -1,0 +1,170 @@
+{
+  "provenance": {
+    "timestamp_utc": "2026-11-10T20:03:43+00:00",
+    "git_commit": "5570e5d1aa1bdd2a0f9709acb2d50efd332816a3",
+    "git_dirty": false,
+    "upstream_commit": "3b2d4d27ec1f9d70af943806ece8dfd665b8d28b",
+    "slurm_job_id": "29072175",
+    "host": "gcn42.local.snellius.surf.nl",
+    "gpu": "NVIDIA A100-SXM4-40GB",
+    "python": "3.11.18",
+    "packages": {
+      "torch": "2.7.0",
+      "transformers": "4.55.0",
+      "sentence-transformers": "5.0.0",
+      "mteb": "1.38.39",
+      "peft": "0.15.2"
+    },
+    "config": {
+      "exp_id": "E5",
+      "run_name": "linear_pilot_fp32",
+      "dataset": "/scratch-shared/scur0944/csrv2/training_data/training_data_fp32/5cc3c3efd1a81ab343137e5832cd9763bc9f3ff2bf66b7586f01a66edc43f87e/dataset.json",
+      "seed": 1227,
+      "embedding_dim": 2560,
+      "hidden_dim": 10240,
+      "batch_size": 256,
+      "auxk": 1024,
+      "dead_threshold": 30,
+      "initial_k": 64,
+      "target_k": [
+        2,
+        16
+      ],
+      "evaluation_k": [
+        2,
+        4,
+        16,
+        64,
+        2560
+      ],
+      "steps": 256,
+      "lr": 2e-05,
+      "weight_decay": 0.0001,
+      "beta": 0.1,
+      "gamma": 1.0,
+      "cpu_threads": 8
+    },
+    "reviewed_source_commit": "1642a62b8231079de53a65d76d52f4326e17fbba",
+    "source_sha256": {
+      "src/csrv2_repro/sae_pilot.py": "9f87b6a6d917eed63eabbabb3116e3695d166609a2ab1b125b7677ffb88a2cda",
+      "src/csrv2_repro/sae_sampling.py": "4e9870ba9e881f8dda8967e68ae4ec8a75be430bffab3976282190ed8b72c53a",
+      "src/csrv2_repro/upstream_sae.py": "2b4c5caf7e13de5a76d590a39e4c80466bb0bf9bbb6596350e260415cf9be3d8",
+      "configs/E5_linear_pilot.toml": "3db1c9634614420e899771083046d5aa17c63c6be99659ecabbd06a92f5f227d"
+    },
+    "numeric_policy": {
+      "dtype": "float32",
+      "tf32": false,
+      "amp": false,
+      "deterministic_algorithms": true
+    }
+  },
+  "sampling": {
+    "positive_pairs": 136307,
+    "singleton_items": 214074,
+    "row_appearances": 486688,
+    "unique_items": 254640,
+    "max_item_frequency": 1363,
+    "batch_count": 1902,
+    "batch_size_counts": {
+      "32": 1,
+      "256": 1901
+    },
+    "batches_without_pair_units": 0,
+    "task_row_appearances": {
+      "ArguAna": 9798,
+      "NFCorpus": 221195,
+      "CQADupstackGamingRetrieval": 47129,
+      "CQADupstackUnixRetrieval": 48703,
+      "ClimateFEVERHardNegatives": 51373,
+      "FiQA2018": 71804,
+      "SCIDOCS": 30230,
+      "SciFact": 6456
+    },
+    "exact_epoch_frequency_check": true,
+    "unique_ids_within_batches": true,
+    "dataset_sha256": "9a35f1f0336e1c7f7dbcdf4e426cfa608b8392f8ad4f9cf7578d7d32436ae332",
+    "manifest_sha256": "ec414bd788251a8dfd2f4444adef9991a49430e3cc890a95183d55fc124b3db5",
+    "batch_order_sha256": "20eab44637614e62377dc7fe5eee0fd1e9786647209e555d5cef13894cd4a421"
+  },
+  "pilots": [
+    {
+      "target_k": 2,
+      "steps": 256,
+      "dataset_sha256": "9a35f1f0336e1c7f7dbcdf4e426cfa608b8392f8ad4f9cf7578d7d32436ae332",
+      "manifest_sha256": "ec414bd788251a8dfd2f4444adef9991a49430e3cc890a95183d55fc124b3db5",
+      "observed_tasks": [
+        "ArguAna",
+        "CQADupstackGamingRetrieval",
+        "CQADupstackUnixRetrieval",
+        "ClimateFEVERHardNegatives",
+        "FiQA2018",
+        "NFCorpus",
+        "SCIDOCS",
+        "SciFact"
+      ],
+      "checkpoint": "/scratch-shared/scur0944/csrv2/sae_pilots/E5-linear-29072175/k2/checkpoint.pth",
+      "checkpoint_bytes": 314820085,
+      "checkpoint_sha256": "91d0150f6111ff554ec036ea6bad3188518020808415ded1b75dd6a1ee9d2df0",
+      "training_seconds": 427.7807132579619,
+      "training_peak_allocated_bytes": 878182400,
+      "overall_peak_allocated_bytes": 1308526592,
+      "encoder_update_norm": 19.911081314086914,
+      "checkpoint_checks": {
+        "inference_exact": true,
+        "sentence_transformers_exact": true,
+        "optimizer_resume_next_step_exact": true,
+        "evaluation_k": [
+          2,
+          4,
+          16,
+          64,
+          2560
+        ]
+      },
+      "no_supervised_gradient_on_reconstruction_only": true,
+      "all_gradients_and_parameters_finite": true,
+      "retrieval_scores_measured": false,
+      "paper_training_complete": false
+    },
+    {
+      "target_k": 16,
+      "steps": 256,
+      "dataset_sha256": "9a35f1f0336e1c7f7dbcdf4e426cfa608b8392f8ad4f9cf7578d7d32436ae332",
+      "manifest_sha256": "ec414bd788251a8dfd2f4444adef9991a49430e3cc890a95183d55fc124b3db5",
+      "observed_tasks": [
+        "ArguAna",
+        "CQADupstackGamingRetrieval",
+        "CQADupstackUnixRetrieval",
+        "ClimateFEVERHardNegatives",
+        "FiQA2018",
+        "NFCorpus",
+        "SCIDOCS",
+        "SciFact"
+      ],
+      "checkpoint": "/scratch-shared/scur0944/csrv2/sae_pilots/E5-linear-29072175/k16/checkpoint.pth",
+      "checkpoint_bytes": 314820085,
+      "checkpoint_sha256": "24915a4f44a13a8e933fa9400971257ffbd88cffb8d66721c7a13fd7ab84e73c",
+      "training_seconds": 11.579487624927424,
+      "training_peak_allocated_bytes": 1402449920,
+      "overall_peak_allocated_bytes": 1833345024,
+      "encoder_update_norm": 19.92258644104004,
+      "checkpoint_checks": {
+        "inference_exact": true,
+        "sentence_transformers_exact": true,
+        "optimizer_resume_next_step_exact": true,
+        "evaluation_k": [
+          2,
+          4,
+          16,
+          64,
+          2560
+        ]
+      },
+      "no_supervised_gradient_on_reconstruction_only": true,
+      "all_gradients_and_parameters_finite": true,
+      "retrieval_scores_measured": false,
+      "paper_training_complete": false
+    }
+  ],
+  "status": "passed"
+}

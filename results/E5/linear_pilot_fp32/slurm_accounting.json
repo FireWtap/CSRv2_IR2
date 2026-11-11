@@ -1,0 +1,5 @@
+{
+  "job_id": "29072175",
+  "timezone": "Europe/Amsterdam",
+  "sacct_pipe_output": "JobID|State|Submit|Start|End|Elapsed|ExitCode|MaxRSS|AllocTRES\n29072175|COMPLETED|2026-11-10T16:44:20|2026-11-10T21:03:21|2026-11-10T21:11:28|00:08:07|0:0||billing=128,cpu=18,gres/cpu=18,gres/gpu:a100=1,gres/gpu=1,mem=120G,node=1\n29072175.batch|COMPLETED|2026-11-10T21:03:21|2026-11-10T21:03:21|2026-11-10T21:11:28|00:08:07|0:0|2416579K|cpu=18,gres/cpu=18,gres/gpu:a100=1,gres/gpu=1,mem=120G,node=1\n29072175.extern|COMPLETED|2026-11-10T21:03:21|2026-11-10T21:03:21|2026-11-10T21:11:29|00:08:08|0:0||billing=128,cpu=18,gres/cpu=18,gres/gpu:a100=1,gres/gpu=1,mem=120G,node=1\n"
+}
