@@ -22,6 +22,18 @@ logger = logging.getLogger(__name__)
 PROMPT_MODES = ("both", "query", "none")
 
 
+def embedding_cache_path(
+    cache_dir: Path, model_tag: str, texts: list[str], prompt: str | None,
+    task: str, side: str,
+) -> Path:
+    """Locate a cached batch by model, prompt and ordered texts."""
+    digest = hashlib.sha1()
+    for part in (model_tag, prompt or "", *texts):
+        digest.update(part.encode("utf-8"))
+        digest.update(b"\x00")
+    return cache_dir / task / f"{side}-{len(texts)}-{digest.hexdigest()[:16]}.npy"
+
+
 class CachedEncoder:
     """Wraps a SentenceTransformer for mteb.MTEB.run.
 
@@ -71,12 +83,8 @@ class CachedEncoder:
     def _cache_path(
         self, sentences: list[str], prompt: str | None, task_name: str, prompt_type
     ) -> Path:
-        h = hashlib.sha1()
-        for part in (self.model_tag, prompt or "", *sentences):
-            h.update(part.encode("utf-8"))
-            h.update(b"\x00")
         side = prompt_type.value if prompt_type is not None else "none"
-        return self.cache_dir / task_name / f"{side}-{len(sentences)}-{h.hexdigest()[:16]}.npy"
+        return embedding_cache_path(self.cache_dir, self.model_tag, sentences, prompt, task_name, side)
 
     def embed(self, sentences, task_name: str, prompt_type=None) -> np.ndarray:
         """Backbone embeddings (cached), before the transform."""

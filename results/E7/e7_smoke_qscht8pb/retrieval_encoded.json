@@ -1,0 +1,128 @@
+{
+  "measurements": [
+    {
+      "method": "qwen_dense",
+      "k": null,
+      "ms_per_batch_mean": 0.23796533544858298,
+      "ms_per_batch_p95": 0.2597893006168306,
+      "queries_per_second": 16809.170934328282,
+      "query_batch_size": 4,
+      "queries": 8,
+      "documents": 24,
+      "corpus_bytes": 245760,
+      "query_bytes": 81920,
+      "cuda_memory": {
+        "allocated_before_bytes": 113879552,
+        "peak_allocated_bytes": 113885184,
+        "extra_peak_bytes": 5632
+      },
+      "top_n": 10,
+      "kernel": "torch.matmul",
+      "dtype": "torch.float32",
+      "device": "cuda:0"
+    },
+    {
+      "method": "mrl",
+      "k": 2,
+      "ms_per_batch_mean": 0.20510167814791203,
+      "ms_per_batch_p95": 0.2123520476743579,
+      "queries_per_second": 19502.52204721281,
+      "query_batch_size": 4,
+      "queries": 8,
+      "documents": 24,
+      "corpus_bytes": 192,
+      "query_bytes": 64,
+      "cuda_memory": {
+        "allocated_before_bytes": 113512960,
+        "peak_allocated_bytes": 113518592,
+        "extra_peak_bytes": 5632
+      },
+      "top_n": 10,
+      "kernel": "torch.matmul",
+      "dtype": "torch.float32",
+      "device": "cuda:0"
+    },
+    {
+      "method": "csrv2",
+      "k": 2,
+      "ms_per_batch_mean": 0.25676928150157136,
+      "ms_per_batch_p95": 0.27496214024722576,
+      "queries_per_second": 15578.187455322693,
+      "query_batch_size": 4,
+      "queries": 8,
+      "documents": 24,
+      "corpus_bytes": 784,
+      "query_bytes": 327680,
+      "cuda_memory": {
+        "allocated_before_bytes": 114005504,
+        "peak_allocated_bytes": 114011136,
+        "extra_peak_bytes": 5632
+      },
+      "top_n": 10,
+      "kernel": "torch.sparse.mm",
+      "dtype": "torch.float32",
+      "device": "cuda:0"
+    }
+  ],
+  "source": "encoded",
+  "input_files": [
+    "/scratch-shared/scur0911/csrv2/e7/e7_smoke_qscht8pb/embeddings/dense_query.npy",
+    "/scratch-shared/scur0911/csrv2/e7/e7_smoke_qscht8pb/embeddings/dense_document.npy",
+    "/scratch-shared/scur0911/csrv2/e7/e7_smoke_qscht8pb/embeddings/csrv2_query.npy",
+    "/scratch-shared/scur0911/csrv2/e7/e7_smoke_qscht8pb/embeddings/csrv2_document.npy"
+  ],
+  "trace": null,
+  "provenance": {
+    "timestamp_utc": "2026-11-11T12:32:11+00:00",
+    "git_commit": "de8a1d2d36261082964ee0fa4f4e87e5d2d86da8",
+    "git_dirty": true,
+    "upstream_commit": "3b2d4d27ec1f9d70af943806ece8dfd665b8d28b",
+    "slurm_job_id": "29104915",
+    "host": "gcn34.local.snellius.surf.nl",
+    "gpu": "NVIDIA A100-SXM4-40GB",
+    "python": "3.11.18",
+    "packages": {
+      "torch": "2.7.0",
+      "transformers": "4.55.0",
+      "sentence-transformers": "5.0.0",
+      "mteb": "1.38.39",
+      "peft": "0.15.2"
+    },
+    "config": {
+      "run_name": "e7_smoke_qscht8pb",
+      "task": "SciFact",
+      "split": "test",
+      "dtype": "float32",
+      "padding_side": "left",
+      "max_seq_length": 512,
+      "prompt_mode": "both",
+      "embedding_dim": 2560,
+      "cache_corpus_chunk_size": 50000,
+      "encoding_batch_size": 4,
+      "encoding_warmup": 2,
+      "encoding_k": 2,
+      "ks": [
+        2
+      ],
+      "query_batch_size": 4,
+      "corpus_block_size": 12,
+      "top_n": 10,
+      "search_warmup": 2,
+      "search_rounds": 3,
+      "profile_cuda": false,
+      "manifest": "/scratch-local/scur0911.29104915/e7_smoke_qscht8pb/manifest.jsonl",
+      "encoding_profile_stride": 1,
+      "encoding_calibration_pairs": 20,
+      "dense": {
+        "model": "Qwen/Qwen3-Embedding-4B",
+        "revision": "5cf2132abc99cad020ac570b19d031efec650f2b",
+        "cache_run": "qwen3_4b_dense_prompt_both_fp32"
+      },
+      "csrv2": {
+        "model": "Y-Research-Group/CSRv2-retrieval",
+        "revision": "af16198ddd83dec2d747756a1fb592378c15c4ac",
+        "cache_run": "released_ckpt_fp32"
+      }
+    }
+  }
+}

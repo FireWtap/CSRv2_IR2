@@ -1,0 +1,110 @@
+{
+  "measurements": {
+    "dense": {
+      "query": {
+        "texts": 8,
+        "seconds": 0.22294787294231355,
+        "texts_per_second": 35.882827202706494,
+        "profiled_batches": 2,
+        "profiled_texts": 8,
+        "backbone_stream_ms_per_batch_mean": 111.43108749389648,
+        "sae_stream_ms_per_batch_mean": null
+      },
+      "document": {
+        "texts": 24,
+        "seconds": 4.557103507919237,
+        "texts_per_second": 5.26650315453518,
+        "profiled_batches": 6,
+        "profiled_texts": 24,
+        "backbone_stream_ms_per_batch_mean": 759.4828643798828,
+        "sae_stream_ms_per_batch_mean": null
+      }
+    },
+    "csrv2": {
+      "query": {
+        "texts": 8,
+        "seconds": 0.270761358900927,
+        "texts_per_second": 29.546313522998833,
+        "profiled_batches": 2,
+        "profiled_texts": 8,
+        "backbone_stream_ms_per_batch_mean": 135.14214706420898,
+        "sae_stream_ms_per_batch_mean": 0.2032639980316162
+      },
+      "document": {
+        "texts": 24,
+        "seconds": 4.922399634146132,
+        "texts_per_second": 4.875670767061395,
+        "profiled_batches": 6,
+        "profiled_texts": 24,
+        "backbone_stream_ms_per_batch_mean": 820.1596018473307,
+        "sae_stream_ms_per_batch_mean": 0.20753066490093866,
+        "marker_calibration": {
+          "pairs": 20,
+          "texts_per_batch": 4,
+          "unmarked_ms_per_batch_median": 877.4769904557616,
+          "marked_minus_unmarked_ms_median": -0.24143996415659785,
+          "marked_minus_unmarked_ms_iqr": [
+            -0.5954575317446142,
+            0.6352433119900525
+          ],
+          "overhead_pct": -0.02751524732645057,
+          "recommended_stride": 1
+        }
+      }
+    }
+  },
+  "embeddings": "/scratch-shared/scur0911/csrv2/e7/e7_smoke_qscht8pb",
+  "provenance": {
+    "timestamp_utc": "2026-11-11T12:32:02+00:00",
+    "git_commit": "de8a1d2d36261082964ee0fa4f4e87e5d2d86da8",
+    "git_dirty": true,
+    "upstream_commit": "3b2d4d27ec1f9d70af943806ece8dfd665b8d28b",
+    "slurm_job_id": "29104915",
+    "host": "gcn34.local.snellius.surf.nl",
+    "gpu": "NVIDIA A100-SXM4-40GB",
+    "python": "3.11.18",
+    "packages": {
+      "torch": "2.7.0",
+      "transformers": "4.55.0",
+      "sentence-transformers": "5.0.0",
+      "mteb": "1.38.39",
+      "peft": "0.15.2"
+    },
+    "config": {
+      "run_name": "e7_smoke_qscht8pb",
+      "task": "SciFact",
+      "split": "test",
+      "dtype": "float32",
+      "padding_side": "left",
+      "max_seq_length": 512,
+      "prompt_mode": "both",
+      "embedding_dim": 2560,
+      "cache_corpus_chunk_size": 50000,
+      "encoding_batch_size": 4,
+      "encoding_warmup": 2,
+      "encoding_k": 2,
+      "ks": [
+        2
+      ],
+      "query_batch_size": 4,
+      "corpus_block_size": 12,
+      "top_n": 10,
+      "search_warmup": 2,
+      "search_rounds": 3,
+      "profile_cuda": false,
+      "manifest": "/scratch-local/scur0911.29104915/e7_smoke_qscht8pb/manifest.jsonl",
+      "encoding_profile_stride": 1,
+      "encoding_calibration_pairs": 20,
+      "dense": {
+        "model": "Qwen/Qwen3-Embedding-4B",
+        "revision": "5cf2132abc99cad020ac570b19d031efec650f2b",
+        "cache_run": "qwen3_4b_dense_prompt_both_fp32"
+      },
+      "csrv2": {
+        "model": "Y-Research-Group/CSRv2-retrieval",
+        "revision": "af16198ddd83dec2d747756a1fb592378c15c4ac",
+        "cache_run": "released_ckpt_fp32"
+      }
+    }
+  }
+}
