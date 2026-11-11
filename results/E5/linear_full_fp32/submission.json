@@ -1,6 +1,6 @@
 {
   "provenance": {
-    "git_commit": "a84d6bb618258686db2eb55da18fb5e44455ae1a",
+    "git_commit": "001fe53b82aa933609cdfeb88d38a7a3991fee66",
     "upstream_commit": "3b2d4d27ec1f9d70af943806ece8dfd665b8d28b",
     "config": {
       "exp_id": "E5",
@@ -31,8 +31,8 @@
       "checkpoint_every_steps": 1000,
       "checkpoint_every_seconds": 600
     },
-    "slurm_job_id": "29105826",
-    "timestamp_utc": "2026-11-11T08:34:30.385901+00:00",
+    "slurm_job_id": "29105891",
+    "timestamp_utc": "2026-11-11T08:38:32.534091+00:00",
     "source_sha256": {
       "src/csrv2_repro/sae_train.py": "86c92d21e7cd2ba52dd31af09da6086536a003065dfc3890fd188a8335aeef12",
       "src/csrv2_repro/sae_pilot.py": "9f87b6a6d917eed63eabbabb3116e3695d166609a2ab1b125b7677ffb88a2cda",
@@ -41,16 +41,19 @@
       "tests/test_sae_train.py": "403b27c45d2663cccdd99aa401b2acd571f849e893d05125bf362433b8f1533d",
       "configs/E5_linear_full.toml": "90c24f323417154ff6eb5a59bdadee7caa7c35653bb6ef6ace5ad7d35cdd4952",
       "jobs/snellius/E5_linear_calibrate.job": "4839292a76263773b1e4b8f6019f5750e0f6417f3ba76afe3d3ac725579b0043",
-      "jobs/snellius/E5_linear_full.job": "5674e81c0e23c37f5d195a32e7a9982c906ee0bed36c27222a8c89901fff05f9"
+      "jobs/snellius/E5_linear_full.job": "0dd45379af0a733fc3b42f94f9754394d0e6789501efe95347b9ee20c7bd3fc4"
     }
   },
-  "calibration_job_id": "29105826",
+  "job_id": "29105891",
   "status_at_submission": "PENDING",
   "reason_at_submission": "Priority",
-  "calibration_time_limit": "00:20:00",
+  "time_limit": "06:00:00",
+  "gpus": 1,
+  "partition": "gpu_a100",
   "output": "/scratch-shared/scur0944/csrv2/sae_training/E5-linear-k2-20261111",
-  "continuation": "Automatically submitted after successful two-epoch calibration; ID recorded in output/continuation_job_id.txt",
-  "full_time_limit": "Measured remaining-runtime estimate times 1.25, rounded up to a minute; no 24-hour limit",
-  "training": "One fresh CSRv2-linear head, original frozen Qwen embeddings, full 128-epoch global schedule 64 to 2; calibration epochs count toward budget",
+  "launch": "Direct full training; no calibration or dependency; starts fresh",
+  "training": "One CSRv2-linear head, 128 epochs, batch 256, annealing 64 to 2; original frozen Qwen vectors; no LoRA",
+  "superseded_calibration_job": "29105826",
+  "decision": "D-016",
   "retrieval_scores_measured": false
 }
