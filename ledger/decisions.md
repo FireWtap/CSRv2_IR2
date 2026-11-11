@@ -38,3 +38,26 @@ not with our own retraining. Principle: use the authors' artifacts wherever they
 and the paper (known so far: ckpt trainer_state differs from the paper recipe, and test-qrel leakage in its recipe;
 see docs/reproduction/upstream_training.md). Own retraining (E6) stays optional. CSR and CSRv2-linear have no released
 Qwen3-4B ckpt (HF org checked 2026-11-04), so those columns need E3-E5. Status: active.
+
+## D-007 (2026-11-04, francesco) Resolves D-005: all Table 3 evals in fp32
+E1p (results/E1p/precision_report.json): bf16-fp32 dense macro dnDCG@10 = -0.10, 95% CI [-0.26, 0.03]; TOST at
+delta 0.2 not passed on 2 tasks, so bf16 equivalence is not established. Evals use fp32, as upstream does. Cost ~12 A100-h
+per backbone pass, so eval8 runs as three parallel jobs (PART=both|e6b|query). Status: active.
+
+## D-008 (2026-11-07, francesco) Extend Table 3 to all six task types for Backbone, MRL and CSRv2 (E9)
+Partly supersedes D-001's "retrieval only": Table 3's other five columns (classification, clustering, STS, pair
+classification, reranking) are reproduced for the Backbone, MRL and CSRv2 rows only; CSR and CSRv2-linear stay out
+(no released ckpts, need E3-E5 training). CSRv2 = released `Y-Research-Group/CSRv2-<type>` ckpts (D-006; revisions
+pinned in configs/E9_csrv2_released.toml). Open retrieval gaps (MRL k<=16, CSRv2 k>=16) are parked, not blocking.
+Protocol: tasks = upstream task_list.json via dataset_to_task.json (STS17, STS22.v2 named as in MTEB_task_prompts.json);
+English subsets only (common.HF_SUBSETS; STS17 = en-en, since upstream's hf_subsets=["en"] leaves it no subset);
+test split; fp32 (D-007); prompts as D-004 (instruction on every text for symmetric tasks, which equals upstream,
+queries only for reranking); metrics accuracy / V-measure / cosine Spearman / cosine AP (paper App. B; mteb's
+main_score is max_ap) / MAP, x100. Status: active.
+
+## D-009 (2026-11-11, francesco) Results are not committed to git
+Supersedes AGENTS.md's "commit results as small files". `results/` is gitignored (except .gitkeep) and untracked;
+every result dir lives on shared scratch at /scratch-shared/scur0933/csrv2/predictions/<EXP_ID>/<run>/ (same layout,
+readable by scur0911 and scur0944). Runs still write results/ locally with full provenance in summary.json; copy
+(not mv) to scratch when done. Earlier commits on main still hold E0/E1p results in history; not rewritten.
+Status: active.

@@ -1,0 +1,17 @@
+# E9 prompt check (D-004, D-008): reranking with the task instruction on queries AND candidates, as upstream eval_all()
+# does. Compared with E9_dense (query-only) to settle the reranking prompt protocol. Only meant for --task-type reranking.
+exp_id = "E9"
+run_name = "qwen3_4b_dense_prompt_both_fp32"
+model = "Qwen/Qwen3-Embedding-4B"
+revision = "5cf2132abc99cad020ac570b19d031efec650f2b"
+dtype = "float32"          # D-007
+max_seq_length = 512
+batch_size = 16
+prompt_mode = "both"       # upstream protocol: instruction on queries and candidates
+
+[paper_target_mean]        # Table 3, Qwen3-Embed-4B row
+classification = 85.79
+clustering = 55.27
+sts = 88.63
+pair_classification = 91.42
+reranking = 72.03

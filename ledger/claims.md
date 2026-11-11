@@ -5,4 +5,5 @@ A claim older than 48h without a log entry is stale: ask its owner before taking
 
 | Since (UTC date) | Owner (person/agent) | Exp/area | Paths touched | Branch |
 |------------------|----------------------|----------|---------------|--------|
-| 2026-11-03 | francesco/claude | E0, E1, E2, E6b | src/csrv2_repro/, configs/E0_*, configs/E1_*, configs/E2_*, configs/E6b_*, jobs/snellius/E0_*, jobs/snellius/E1_*, jobs/snellius/eval8_* | francesco/E0-E1-eval |
+| 2026-11-06 | francesco/claude | E6b (query-only prompt check) | src/csrv2_repro/e0_released_ckpt.py, configs/E6b_*, jobs/snellius/E6b_*, results/E6b/ | francesco/E6b-query-prompt |
+| 2026-11-07 | francesco/claude | E9 (other 5 Table 3 task types: dense, MRL, released CSRv2) | src/csrv2_repro/{common,encoders,e0_released_ckpt,e1_dense_backbone,e2_mrl}.py, configs/E9_*, jobs/snellius/E9_*, scripts/{submit,prefetch}_E9.*, results/E9/ | francesco/E9-other-task-types |

@@ -1,0 +1,15 @@
+# E6b (variant): released CSRv2-retrieval ckpt with the Qwen3 prompt protocol (instruction on queries only,
+# documents raw), on the two tasks carrying most of the E6b gap to Table 3. Tests the hypothesis that the
+# paper's CSRv2 numbers used query-only prompts (E1: query-only 58.19 ~ paper 58.37, both 55.88).
+# Compare per task with results/E6b/released_ckpt_fp32 (prompt on both sides).
+exp_id = "E6b"
+run_name = "released_ckpt_query_fp32"
+cache_name = "released_ckpt_fp32"   # share prompted query embeddings with the "both" run (content-hashed)
+model = "Y-Research-Group/CSRv2-retrieval"
+revision = "af16198ddd83dec2d747756a1fb592378c15c4ac"
+dtype = "float32"          # D-007
+batch_size = 16
+prompt_mode = "query"
+tasks = ["ClimateFEVERHardNegatives", "FiQA2018"]
+ks = [2, 4, 16, 64, 2560]
+faithful_ks = []

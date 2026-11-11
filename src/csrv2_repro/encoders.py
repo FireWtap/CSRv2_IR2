@@ -28,8 +28,12 @@ class CachedEncoder:
     prompt_mode:
       "both"  - task instruction prepended to queries AND documents. This is what upstream's
                 all_step_pipeline_mteb_evaluation.py does (model.prompts keyed by task name).
-      "query" - instruction on queries only (Qwen3-Embedding's recommended usage).
+      "query" - Qwen3-Embedding's usage: instruction on queries, documents raw. Symmetric tasks
+                (classification, clustering, STS, pair classification), where mteb passes no
+                prompt_type, get the instruction on every text, as in Qwen3's own MTEB evaluation.
       "none"  - no instruction (sanity checks against plain mteb).
+
+    require_cache: raise on a cache miss instead of encoding (scoring-only jobs, e.g. E2 on a MIG slice).
     """
 
     def __init__(
@@ -42,6 +46,7 @@ class CachedEncoder:
         batch_size: int,
         transform: Callable[[np.ndarray], np.ndarray] | None = None,
         meta_name: str | None = None,
+        require_cache: bool = False,
     ):
         if prompt_mode not in PROMPT_MODES:
             raise ValueError(f"prompt_mode must be one of {PROMPT_MODES}, got {prompt_mode!r}")
@@ -52,6 +57,7 @@ class CachedEncoder:
         self.cache_dir = Path(cache_dir)
         self.batch_size = batch_size
         self.transform = transform
+        self.require_cache = require_cache
         self.mteb_model_meta = self._meta(meta_name or model_tag)
 
     def _meta(self, name: str):
@@ -61,8 +67,8 @@ class CachedEncoder:
         return meta.model_copy(update={"name": name, "revision": "local"})
 
     def _prompt(self, task_name: str, prompt_type) -> str | None:
-        is_query = prompt_type is not None and prompt_type.value == "query"
-        if self.prompt_mode == "none" or (self.prompt_mode == "query" and not is_query):
+        is_document = prompt_type is not None and prompt_type.value != "query"
+        if self.prompt_mode == "none" or (self.prompt_mode == "query" and is_document):
             return None
         if task_name not in self.prompts:
             raise KeyError(f"No upstream prompt for task {task_name}")
@@ -86,6 +92,8 @@ class CachedEncoder:
         if path.exists():
             logger.info("cache hit %s", path)
             return np.load(path)
+        if self.require_cache:
+            raise FileNotFoundError(f"embedding cache miss with require_cache=True: {path}")
         emb = self.model.encode(
             sentences,
             prompt=prompt,
@@ -104,7 +112,7 @@ class CachedEncoder:
         return self.transform(emb) if self.transform is not None else emb
 
     def similarity(self, a, b) -> torch.Tensor:
-        # Paper App. B.1: cosine similarity for retrieval.
+        # Paper App. B.1: cosine similarity (all task types).
         return cos_sim(torch.as_tensor(a), torch.as_tensor(b))
 
 

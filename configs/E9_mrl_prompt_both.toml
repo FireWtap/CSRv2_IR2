@@ -1,0 +1,39 @@
+# E9 prompt check: MRL truncation of the E9_dense_prompt_both cache (instruction on queries and candidates).
+# --task-type reranking only; compare with E9_mrl (query-only).
+exp_id = "E9"
+run_name = "qwen3_4b_mrl_prompt_both_fp32"
+dtype = "float32"          # D-007, must match E9_dense
+dense_config = "configs/E9_dense_prompt_both.toml"
+ks = [2, 4, 16, 64, 2560]   # 2560 = full embedding: must equal the E9 dense score (sanity check)
+
+# Table 3, MRL rows
+[paper_target_mean_by_k.classification]
+2 = 26.47
+4 = 48.27
+16 = 75.22
+64 = 83.42
+2560 = 85.38
+[paper_target_mean_by_k.clustering]
+2 = 24.20
+4 = 32.08
+16 = 47.24
+64 = 53.73
+2560 = 55.04
+[paper_target_mean_by_k.sts]
+2 = 30.22
+4 = 53.11
+16 = 79.21
+64 = 86.60
+2560 = 88.02
+[paper_target_mean_by_k.pair_classification]
+2 = 18.46
+4 = 30.73
+16 = 73.29
+64 = 88.08
+2560 = 91.27
+[paper_target_mean_by_k.reranking]
+2 = 32.43
+4 = 40.59
+16 = 60.82
+64 = 69.61
+2560 = 71.64
