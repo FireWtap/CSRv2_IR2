@@ -40,11 +40,9 @@ from csrv2_repro.encoders import embedding_cache_path
 logger = logging.getLogger(__name__)
 ROLES = ("query", "document")
 MODELS = ("dense", "csrv2")
+TextRow = dict[str, str]
 EmbeddingsByModelAndRole = dict[tuple[str, str], np.ndarray]
 EncodingOptions = tuple[str | None, int, int]
-
-
-TextRow = dict[str, str]
 
 
 def main() -> None:
@@ -54,42 +52,37 @@ def main() -> None:
     for name in ("encode", "search"):
         command = commands.add_parser(name)
         command.add_argument("--config", type=Path, required=True)
-    commands.choices["search"].add_argument(
-        "--source", choices=("cache", "encoded"), default="cache"
-    )
-    commands.choices["search"].add_argument(
-        "--cache-root",
-        type=Path,
-        help="Directory containing emb_cache/ (overrides E7_CACHE_ROOT and SCRATCH_ROOT)",
-    )
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     cfg = load_config(args.config)
-    for key in (
-        "encoding_batch_size",
-        "encoding_k",
-        "cache_corpus_chunk_size",
-        "query_batch_size",
-        "search_rounds",
-        "corpus_block_size",
-        "top_n",
-    ):
+    positive_keys = (
+        ("encoding_batch_size", "encoding_k")
+        if args.command == "encode"
+        else ("query_batch_size", "search_rounds", "corpus_block_size", "top_n")
+    )
+    for key in positive_keys:
         if cfg[key] <= 0:
             parser.error(f"{key} must be positive")
-    if not cfg["ks"] or min(cfg["ks"]) <= 0:
-        parser.error("ks must contain positive values")
     if cfg["prompt_mode"] not in ("both", "query"):
         parser.error("prompt_mode must be both or query")
-    for key, default in (("encoding_profile_stride", 1), ("encoding_calibration_pairs", 0)):
-        value = cfg.get(key, default)
-        if type(value) is not int or value < 0:
-            parser.error(f"{key} must be a nonnegative integer")
+    stride = cfg.get("encoding_profile_stride", 1)
+    if type(stride) is not int or stride < 0:
+        parser.error("encoding_profile_stride must be a nonnegative integer")
     root = Path(os.environ.get("SCRATCH_ROOT", OUTPUTS))
     run_dir = root / "e7" / cfg["run_name"]
     out = RESULTS / "E7" / cfg["run_name"]
-    if args.command == "search" and args.source == "cache":
-        cache_root = args.cache_root or Path(os.environ.get("E7_CACHE_ROOT", root))
-        logger.info("Reading cached embeddings under %s", cache_root / "emb_cache")
+    if args.command == "search":
+        if "manifest" not in cfg:
+            parser.error("search requires manifest in the config")
+        source = cfg.get("embedding_source")
+        if source not in ("cache", "encoded"):
+            parser.error("search requires embedding_source to be cache or encoded")
+        if source == "cache" and "cache_root" not in cfg:
+            parser.error("search with embedding_source=cache requires cache_root")
+        if source == "cache" and cfg["cache_corpus_chunk_size"] <= 0:
+            parser.error("cache_corpus_chunk_size must be positive")
+        if not cfg["ks"] or min(cfg["ks"]) <= 0:
+            parser.error("ks must contain positive values")
     rows = load_rows(cfg)
     all_prompts = upstream_prompts()
     prompts = {task: all_prompts[task] for task in sorted({row["task"] for row in rows})}
@@ -106,51 +99,101 @@ def main() -> None:
         )
     else:
         vectors, paths = (
-            load_cached(cfg, rows, prompts, cache_root)
-            if args.source == "cache"
+            load_cached(cfg, rows, prompts, Path(cfg["cache_root"]))
+            if source == "cache"
             else load_encoded(cfg, rows, prompts, run_dir)
         )
-        trace_path = root / "e7" / "traces" / cfg["run_name"] / f"{args.source}.json"
-        results, trace = run_search(cfg, vectors, device, trace_path)
-        write_json(
-            out / f"retrieval_{args.source}.json",
-            dict(
-                measurements=results,
-                source=args.source,
-                input_files=paths,
-                trace=trace,
-                provenance=provenance(cfg),
-            ),
-        )
+        for variant, indices, distinct_documents in search_corpora(cfg, rows):
+            label = f"{source}_{variant}" if variant else source
+            logger.info("Benchmarking corpus %s", label)
+            trace_path = root / "e7" / "traces" / cfg["run_name"] / f"{label}.json"
+            results, trace = run_search(cfg, vectors, device, trace_path, indices)
+            write_json(
+                out / f"retrieval_{label}.json",
+                dict(
+                    measurements=results,
+                    source=source,
+                    corpus_variant=variant,
+                    distinct_document_texts=distinct_documents,
+                    manifest=cfg["manifest"],
+                    input_files=paths,
+                    trace=trace,
+                    provenance=provenance(cfg),
+                ),
+            )
+
+
+def search_corpora(
+    cfg: dict, rows: list[TextRow]
+) -> Iterator[tuple[str, np.ndarray | None, int | None]]:
+    """Choose document row indices while leaving all queries in manifest order."""
+    repeat_to = cfg.get("repeat_corpus_to")
+    duplicate_control = cfg.get("duplicate_control", False)
+    if repeat_to is None and not duplicate_control:
+        yield "", None, None
+        return
+    if repeat_to is not None and duplicate_control:
+        raise ValueError("Choose either repeat_corpus_to or duplicate_control")
+
+    texts = [row["text"].strip() for row in rows if row["role"] == "document"]
+    rng = np.random.default_rng(cfg["corpus_seed"])
+    if repeat_to is not None:
+        if type(repeat_to) is not int or repeat_to < len(texts):
+            raise ValueError("repeat_corpus_to must be an integer at least as large as the corpus")
+        # Repeat every original row evenly, then spread copies across search blocks.
+        indices = np.resize(rng.permutation(len(texts)), repeat_to)
+        rng.shuffle(indices)
+        yield "repeated", indices, len(set(texts))
+        return
+
+    first_by_text = {}
+    for index, text in enumerate(texts):
+        first_by_text.setdefault(text, index)
+    unique = rng.permutation(list(first_by_text.values()))
+    pool = unique[: (len(unique) + 3) // 4]
+    repeated = np.resize(pool, len(unique))
+    rng.shuffle(repeated)
+    yield "unique", unique, len(unique)
+    yield "repeated", repeated, len(pool)
 
 
 # Inputs and saved embeddings
 
 
+def task_rows(name: str, split: str = "test") -> list[TextRow]:
+    """Read queries and corpus in the original MTEB cache order."""
+    import mteb
+
+    task = mteb.get_task(name)
+    task.load_data(eval_splits=[split])
+    queries = task.queries[split]
+    corpus = task.corpus[split]
+    # MTEB 1.38.39 sorts document IDs in reverse order before creating cache chunks.
+    rows = [
+        {"id": key, "text": text, "role": "query", "task": task.metadata.name}
+        for key, text in queries.items()
+    ]
+    rows += [
+        {"id": key, "text": corpus[key], "role": "document", "task": task.metadata.name}
+        for key in sorted(corpus, reverse=True)
+    ]
+    return rows
+
+
 def load_rows(cfg: dict) -> list[TextRow]:
-    """Read an ordered manifest or reconstruct the pinned MTEB retrieval input."""
+    """Read and validate an E7 manifest or load a single task for encoding."""
     if "manifest" in cfg:
-        with Path(cfg["manifest"]).open() as stream:
+        with Path(cfg["manifest"]).open(encoding="utf-8") as stream:
             rows = [json.loads(line) for line in stream if line.strip()]
     else:
-        import mteb
-
-        task = mteb.get_task(cfg["task"])
-        split = cfg["split"]
-        task.load_data(eval_splits=[split])
-        queries = task.queries[split]
-        corpus = task.corpus[split]
-        # MTEB 1.38.39 sorts document IDs in reverse order before creating cache chunks.
-        rows = [
-            {"id": key, "text": text, "role": "query", "task": task.metadata.name}
-            for key, text in queries.items()
-        ]
-        rows += [
-            {"id": key, "text": corpus[key], "role": "document", "task": task.metadata.name}
-            for key in sorted(corpus, reverse=True)
-        ]
+        rows = task_rows(cfg["task"], cfg["split"])
     required_fields = {"id", "text", "role", "task"}
-    if any(not isinstance(row, dict) or row.keys() != required_fields for row in rows):
+    if any(
+        not isinstance(row, dict)
+        or row.keys() != required_fields
+        or any(not isinstance(value, str) for value in row.values())
+        for row in rows
+    ):
         raise ValueError("Each input row requires exactly id, text, role and task.")
     keys = [(row["role"], row["task"], row["id"]) for row in rows]
     if len(keys) != len(set(keys)) or {row["role"] for row in rows} != set(ROLES):
@@ -185,50 +228,69 @@ def read_vectors(path: Path, count: int, dim: int) -> np.ndarray:
     return vectors
 
 
-def load_cached(
-    cfg: dict,
-    rows: list[TextRow],
-    prompts: dict[str, str],
-    root: Path,
-) -> tuple[EmbeddingsByModelAndRole, list[str]]:
-    """Return four pre-head matrices plus the file paths used to read them.
+def cached_chunks(
+    cfg: dict, rows: list[TextRow], prompts: dict[str, str], root: Path
+) -> Iterator[tuple[tuple[str, str], Path, np.ndarray, np.ndarray, np.ndarray]]:
+    """Resolve cache headers and yield matching source and manifest row indices."""
+    groups = defaultdict(list)
+    counts = dict.fromkeys(ROLES, 0)
+    for row in rows:
+        role = row["role"]
+        groups[row["task"], role].append((counts[role], row))
+        counts[role] += 1
 
-    Each model has a query matrix [Q, D] and a document matrix [N, D].
-    The paths are recorded in the results JSON for provenance.
-    """
-    if "manifest" in cfg:
-        raise ValueError("Use encode and --source encoded for a custom manifest.")
-    embeddings = {}
-    cache_paths = []
-    for model_name in MODELS:
-        model = cfg[model_name]
+    for task in dict.fromkeys(row["task"] for row in rows):
+        original = task_rows(task, cfg.get("split", "test"))
         for role in ROLES:
-            texts = [row["text"] for row in rows if row["role"] == role]
-            prompt = (
-                prompts[cfg["task"]] if cfg["prompt_mode"] == "both" or role == "query" else None
-            )
+            selection = groups.get((task, role), [])
+            if not selection:
+                continue
+            full = [row for row in original if row["role"] == role]
+            positions = {row["id"]: index for index, row in enumerate(full)}
+            for _, row in selection:
+                if row["id"] not in positions or full[positions[row["id"]]] != row:
+                    raise ValueError(f"Manifest row does not match {task}/{role}/{row['id']}")
+            source_indices = np.array([positions[row["id"]] for _, row in selection])
+            target_indices = np.array([index for index, _ in selection])
+            texts = [row["text"] for row in full]
+            prompt = prompts[task] if cfg["prompt_mode"] == "both" or role == "query" else None
             chunk_size = len(texts) if role == "query" else cfg["cache_corpus_chunk_size"]
-            embedding_chunks = []
             for start in range(0, len(texts), chunk_size):
-                chunk_texts = texts[start : start + chunk_size]
-                path = embedding_cache_path(
-                    root / "emb_cache" / model["cache_run"],
-                    model_tag(model, cfg),
-                    chunk_texts,
-                    prompt,
-                    cfg["task"],
-                    role,
-                )
-                # Each cache file has shape [texts in this chunk, D].
-                embedding_chunks.append(read_vectors(path, len(chunk_texts), cfg["embedding_dim"]))
-                cache_paths.append(str(path))
+                end = start + chunk_size
+                selected = (source_indices >= start) & (source_indices < end)
+                if not selected.any():
+                    continue
+                for name in MODELS:
+                    model = cfg[name]
+                    path = embedding_cache_path(
+                        root / "emb_cache" / model["cache_run"],
+                        model_tag(model, cfg),
+                        texts[start:end],
+                        prompt,
+                        task,
+                        role,
+                    )
+                    chunk = read_vectors(path, min(end, len(texts)) - start, cfg["embedding_dim"])
+                    yield (
+                        (name, role), path, chunk, source_indices[selected] - start,
+                        target_indices[selected],
+                    )
 
-            # Join along the text axis in MTEB order. Keep a single file memory-mapped.
-            if len(embedding_chunks) == 1:
-                embeddings[model_name, role] = embedding_chunks[0]
-            else:
-                embeddings[model_name, role] = np.concatenate(embedding_chunks, axis=0)
-    return embeddings, cache_paths
+
+def load_cached(
+    cfg: dict, rows: list[TextRow], prompts: dict[str, str], root: Path
+) -> tuple[EmbeddingsByModelAndRole, list[str]]:
+    """Gather the requested cache rows into four matrices in manifest order."""
+    vectors = {}
+    for role in ROLES:
+        count = sum(row["role"] == role for row in rows)
+        for name in MODELS:
+            vectors[name, role] = np.empty((count, cfg["embedding_dim"]), dtype=np.float32)
+    paths = []
+    for key, path, chunk, source_indices, target_indices in cached_chunks(cfg, rows, prompts, root):
+        vectors[key][target_indices] = chunk[source_indices]
+        paths.append(str(path))
+    return vectors, paths
 
 
 def model_inputs(cfg: dict) -> dict:
@@ -352,41 +414,6 @@ def time_encode_batch(
     return dense, time.perf_counter() - start
 
 
-def calibrate_encoding_markers(
-    backbone: SentenceTransformer,
-    sae: SparseAutoEncoder,
-    texts: list[str],
-    options: EncodingOptions,
-    device: torch.device,
-    markers: tuple[torch.cuda.Event, ...],
-    pairs: int,
-) -> dict:
-    """Compare marked and unmarked forwards on the same warmed-up CSRv2 batch."""
-    deltas_ms = []
-    unmarked_ms = []
-    for pair in range(pairs):
-        timings = {}
-        for marked in ((False, True) if pair % 2 == 0 else (True, False)):
-            _, seconds = time_encode_batch(
-                backbone, sae, texts, options, device, markers if marked else ()
-            )
-            timings[marked] = seconds * 1000
-        unmarked_ms.append(timings[False])
-        deltas_ms.append(timings[True] - timings[False])
-    median_unmarked = float(np.median(unmarked_ms))
-    median_delta = float(np.median(deltas_ms))
-    delta_pct = 100 * median_delta / median_unmarked
-    return dict(
-        pairs=pairs,
-        texts_per_batch=len(texts),
-        unmarked_ms_per_batch_median=median_unmarked,
-        marked_minus_unmarked_ms_median=median_delta,
-        marked_minus_unmarked_ms_iqr=np.percentile(deltas_ms, [25, 75]).tolist(),
-        overhead_pct=delta_pct,
-        recommended_stride=16 if abs(delta_pct) > 1 else 1,
-    )
-
-
 @torch.inference_mode()
 def encode_rows(
     cfg: dict,
@@ -402,14 +429,13 @@ def encode_rows(
     timings = {}
     batch_size = cfg["encoding_batch_size"]
     profile_stride = cfg.get("encoding_profile_stride", 1)
-    calibration_pairs = cfg.get("encoding_calibration_pairs", 0)
     with TemporaryDirectory(prefix=f".{run_dir.name}-", dir=run_dir.parent) as tmp:
         staging = Path(tmp) / "run"
         (staging / "embeddings").mkdir(parents=True)
         for name in MODELS:
             backbone, sae = load_backbone(cfg, name, device)
             markers = ()
-            if device.type == "cuda" and (profile_stride or (sae is not None and calibration_pairs)):
+            if device.type == "cuda" and profile_stride:
                 marker_count = 3 if sae is not None else 2
                 markers = tuple(torch.cuda.Event(enable_timing=True) for _ in range(marker_count))
                 # CUDA events are initialized lazily. Do that before the timed forwards.
@@ -431,7 +457,6 @@ def encode_rows(
                 elapsed = 0.0
                 profiled_batches = profiled_texts = 0
                 backbone_stream_ms = sae_stream_ms = 0.0
-                calibration = None
                 for task, items in rows_by_task.items():
                     prompt = (
                         prompts[task] if cfg["prompt_mode"] == "both" or role == "query" else None
@@ -441,18 +466,6 @@ def encode_rows(
                     warmup_texts = [text for _, text in items[:batch_size]]
                     for _ in range(cfg["encoding_warmup"]):
                         encode_batch(backbone, sae, warmup_texts, *options)
-                    if (
-                        sae is not None
-                        and role == "document"
-                        and markers
-                        and calibration_pairs
-                        and calibration is None
-                    ):
-                        # Warm the marked path on the exact batch used for calibration.
-                        time_encode_batch(backbone, sae, warmup_texts, options, device, markers)
-                        calibration = calibrate_encoding_markers(
-                            backbone, sae, warmup_texts, options, device, markers, calibration_pairs
-                        )
                     for offset in range(0, len(items), batch_size):
                         indices, texts = zip(*items[offset : offset + batch_size])
                         batch_markers = ()
@@ -485,8 +498,6 @@ def encode_rows(
                         sae_stream_ms / profiled_batches if profiled_batches and sae is not None else None
                     ),
                 )
-                if calibration is not None:
-                    timings[name][role]["marker_calibration"] = calibration
                 logger.info("%s %s: %.3f seconds for %d texts", name, role, elapsed, len(role_rows))
             del backbone, sae
         with (staging / "manifest.jsonl").open("w") as stream:
@@ -527,13 +538,17 @@ def representation(
     sae: SparseAutoEncoder | None,
     block_size: int,
     device: torch.device,
+    corpus_indices: np.ndarray | None = None,
 ) -> tuple[torch.Tensor, list[torch.Tensor]]:
     """Return dense queries [Q, F] and device-resident corpus blocks [C, F]."""
     queries = prepare_vectors(vectors[name, "query"], device, k, sae)
     corpus = vectors[name, "document"]
     blocks = []
-    for start in range(0, len(corpus), block_size):
-        block = prepare_vectors(corpus[start : start + block_size], device, k, sae)
+    count = len(corpus) if corpus_indices is None else len(corpus_indices)
+    for start in range(0, count, block_size):
+        selection = slice(start, start + block_size)
+        rows = selection if corpus_indices is None else corpus_indices[selection]
+        block = prepare_vectors(corpus[rows], device, k, sae)
         # CSR changes storage, not the logical shape [C, H].
         blocks.append(block.to_sparse_csr() if sae is not None else block)
     return queries, blocks
@@ -550,14 +565,22 @@ def search_topk(
     blocks: list[torch.Tensor],
     queries: torch.Tensor,
     top_n: int,
+    score_events: list[tuple[torch.cuda.Event, torch.cuda.Event]] | None = None,
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """Return (scores, corpus row indices), each of shape [up to top_n, B]."""
     block_top_scores = []
     block_top_indices = []
     corpus_offset = 0
-    for block in blocks:
+    for index, block in enumerate(blocks):
+        if score_events is not None:
+            start, end = score_events[index]
+            start.record()
+        scores = score_block(block, queries)
+        if score_events is not None:
+            end.record()
         # Scores are [C, B]. Rank along the document axis to get [min(top_n, C), B].
-        top_scores, local_indices = score_block(block, queries).topk(min(top_n, len(block)), dim=0)
+        top_scores, local_indices = scores.topk(min(top_n, len(block)), dim=0)
+        del scores
         block_top_scores.append(top_scores)
         block_top_indices.append(local_indices + corpus_offset)
         corpus_offset += len(block)
@@ -676,6 +699,39 @@ def benchmark(
     )
 
 
+def profile_search_phases(
+    blocks: list[torch.Tensor], queries: torch.Tensor, cfg: dict
+) -> dict:
+    """Time scoring and the remaining search work in separate CUDA-instrumented rounds."""
+    events = [
+        (torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True))
+        for _ in blocks
+    ]
+    start, end = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)
+    for begin_score, end_score in events:
+        begin_score.record()
+        end_score.record()
+    start.record()
+    end.record()
+    batches = query_batches(queries, cfg["query_batch_size"])
+    samples = []
+    for _ in range(cfg["search_phase_rounds"]):
+        batch = next(batches)
+        sync(queries.device)
+        start.record()
+        search_topk(blocks, batch, cfg["top_n"], events)
+        end.record()
+        sync(queries.device)
+        scoring = sum(first.elapsed_time(last) for first, last in events)
+        samples.append((scoring, start.elapsed_time(end) - scoring))
+    scoring, remaining = np.mean(samples, axis=0)
+    return dict(
+        rounds=len(samples),
+        scoring_ms_per_batch_mean=float(scoring),
+        selection_and_other_ms_per_batch_mean=float(remaining),
+    )
+
+
 def profile_sparse(
     blocks: list[torch.Tensor],
     queries: torch.Tensor,
@@ -702,6 +758,7 @@ def run_search(
     vectors: EmbeddingsByModelAndRole,
     device: torch.device,
     trace_path: Path,
+    corpus_indices: np.ndarray | None = None,
 ) -> tuple[list[dict], dict | None]:
     """Run one dense baseline and paired MRL/CSRv2 configurations."""
     spec = cfg["csrv2"]
@@ -729,10 +786,15 @@ def run_search(
             sae if name == "csrv2" else None,
             cfg["corpus_block_size"],
             device,
+            corpus_indices,
         )
         if name == "csrv2":
             verify_sparse(blocks, queries, cfg["top_n"])
         result = dict(method=method, k=k, **benchmark(blocks, queries, cfg))
+        if name == "csrv2":
+            result["corpus_nnz"] = sum(block.values().numel() for block in blocks)
+        if cfg.get("search_phase_rounds", 0) and device.type == "cuda":
+            result["cuda_search_phases"] = profile_search_phases(blocks, queries, cfg)
         results.append(result)
         logger.info("%s k=%s: %.3f ms/batch", method, k, result["ms_per_batch_mean"])
         if name == "csrv2" and trace_info is None and cfg["profile_cuda"] and device.type == "cuda":

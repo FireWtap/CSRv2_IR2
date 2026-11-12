@@ -1,0 +1,230 @@
+{
+  "measurements": [
+    {
+      "method": "qwen_dense",
+      "k": null,
+      "ms_per_batch_mean": 44.02397010475397,
+      "ms_per_batch_p95": 44.06874040141702,
+      "queries_per_second": 11630.027886665115,
+      "query_batch_size": 512,
+      "queries": 7344,
+      "documents": 240746,
+      "corpus_bytes": 2465239040,
+      "query_bytes": 75202560,
+      "cuda_memory": {
+        "allocated_before_bytes": 2659198976,
+        "peak_allocated_bytes": 2694200832,
+        "extra_peak_bytes": 35001856
+      },
+      "top_n": 10,
+      "kernel": "torch.matmul",
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "cuda_search_phases": {
+        "rounds": 20,
+        "scoring_ms_per_batch_mean": 35.0693378329277,
+        "selection_and_other_ms_per_batch_mean": 9.034137737751006
+      }
+    },
+    {
+      "method": "mrl",
+      "k": 2,
+      "ms_per_batch_mean": 9.461461008177139,
+      "ms_per_batch_p95": 9.51159893302247,
+      "queries_per_second": 54114.26412448354,
+      "query_batch_size": 512,
+      "queries": 7344,
+      "documents": 240746,
+      "corpus_bytes": 1925968,
+      "query_bytes": 58752,
+      "cuda_memory": {
+        "allocated_before_bytes": 115503616,
+        "peak_allocated_bytes": 150505472,
+        "extra_peak_bytes": 35001856
+      },
+      "top_n": 10,
+      "kernel": "torch.matmul",
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "cuda_search_phases": {
+        "rounds": 20,
+        "scoring_ms_per_batch_mean": 0.48235519202426075,
+        "selection_and_other_ms_per_batch_mean": 9.067622348945587
+      }
+    },
+    {
+      "method": "csrv2",
+      "k": 2,
+      "ms_per_batch_mean": 12.749982415698469,
+      "ms_per_batch_p95": 12.836850620806217,
+      "queries_per_second": 40156.91812794956,
+      "query_batch_size": 512,
+      "queries": 7344,
+      "documents": 240746,
+      "corpus_bytes": 7703992,
+      "query_bytes": 300810240,
+      "cuda_memory": {
+        "allocated_before_bytes": 443008000,
+        "peak_allocated_bytes": 510967808,
+        "extra_peak_bytes": 67959808
+      },
+      "top_n": 10,
+      "kernel": "torch.sparse.mm",
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "corpus_nnz": 481492,
+      "cuda_search_phases": {
+        "rounds": 20,
+        "scoring_ms_per_batch_mean": 3.7665792398154734,
+        "selection_and_other_ms_per_batch_mean": 9.063270289450884
+      }
+    },
+    {
+      "method": "mrl",
+      "k": 64,
+      "ms_per_batch_mean": 10.067420668783598,
+      "ms_per_batch_p95": 10.109677369473502,
+      "queries_per_second": 50857.11790981142,
+      "query_batch_size": 512,
+      "queries": 7344,
+      "documents": 240746,
+      "corpus_bytes": 61630976,
+      "query_bytes": 1880064,
+      "cuda_memory": {
+        "allocated_before_bytes": 178205184,
+        "peak_allocated_bytes": 213207040,
+        "extra_peak_bytes": 35001856
+      },
+      "top_n": 10,
+      "kernel": "torch.matmul",
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "cuda_search_phases": {
+        "rounds": 20,
+        "scoring_ms_per_batch_mean": 1.1135488376021385,
+        "selection_and_other_ms_per_batch_mean": 9.030502332746982
+      }
+    },
+    {
+      "method": "csrv2",
+      "k": 64,
+      "ms_per_batch_mean": 87.70343030220829,
+      "ms_per_batch_p95": 87.83764412510209,
+      "queries_per_second": 5837.856036368834,
+      "query_batch_size": 512,
+      "queries": 7344,
+      "documents": 240746,
+      "corpus_bytes": 186819016,
+      "query_bytes": 300810240,
+      "cuda_memory": {
+        "allocated_before_bytes": 623275008,
+        "peak_allocated_bytes": 691573248,
+        "extra_peak_bytes": 68298240
+      },
+      "top_n": 10,
+      "kernel": "torch.sparse.mm",
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "corpus_nnz": 15407744,
+      "cuda_search_phases": {
+        "rounds": 20,
+        "scoring_ms_per_batch_mean": 78.73064970970154,
+        "selection_and_other_ms_per_batch_mean": 9.049447107315064
+      }
+    }
+  ],
+  "source": "cache",
+  "corpus_variant": "repeated",
+  "distinct_document_texts": 60187,
+  "manifest": "/scratch-shared/scur0911/csrv2/e7-inputs/retrieval8.jsonl",
+  "input_files": [
+    "/scratch-shared/scur0933/csrv2/emb_cache/qwen3_4b_dense_prompt_both_fp32/ArguAna/query-1406-acce9d6d5b46a398.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/released_ckpt_fp32/ArguAna/query-1406-3dec8d64287df88b.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/qwen3_4b_dense_prompt_both_fp32/ArguAna/document-8674-90a5dfeca664c2a5.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/released_ckpt_fp32/ArguAna/document-8674-b41e75aa9040193d.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/qwen3_4b_dense_prompt_both_fp32/NFCorpus/query-323-73d7c18afe7322b5.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/released_ckpt_fp32/NFCorpus/query-323-7b37dc25115181f9.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/qwen3_4b_dense_prompt_both_fp32/NFCorpus/document-3633-60aeb724ae44e5d3.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/released_ckpt_fp32/NFCorpus/document-3633-23a7b20f78f923c2.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/qwen3_4b_dense_prompt_both_fp32/CQADupstackGamingRetrieval/query-1595-a5f97f07b77798b9.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/released_ckpt_fp32/CQADupstackGamingRetrieval/query-1595-eb54d6e8a13093e2.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/qwen3_4b_dense_prompt_both_fp32/CQADupstackGamingRetrieval/document-45301-738aca7313273853.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/released_ckpt_fp32/CQADupstackGamingRetrieval/document-45301-61d74bf6588f3f90.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/qwen3_4b_dense_prompt_both_fp32/CQADupstackUnixRetrieval/query-1072-d4dc49a25d6bbcd0.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/released_ckpt_fp32/CQADupstackUnixRetrieval/query-1072-9fb99f3d6cfdd991.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/qwen3_4b_dense_prompt_both_fp32/CQADupstackUnixRetrieval/document-47382-fe7a18de9fc5c27a.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/released_ckpt_fp32/CQADupstackUnixRetrieval/document-47382-8682ada5c9565d89.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/qwen3_4b_dense_prompt_both_fp32/ClimateFEVERHardNegatives/query-1000-42ca862eb5d8fdc0.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/released_ckpt_fp32/ClimateFEVERHardNegatives/query-1000-69af0b1daa31bcd7.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/qwen3_4b_dense_prompt_both_fp32/ClimateFEVERHardNegatives/document-47416-3c6fee289fc75256.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/released_ckpt_fp32/ClimateFEVERHardNegatives/document-47416-0ec16cf084c0204e.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/qwen3_4b_dense_prompt_both_fp32/FiQA2018/query-648-6b63e0c232e57c9b.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/released_ckpt_fp32/FiQA2018/query-648-825f6ca4c38d0cba.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/qwen3_4b_dense_prompt_both_fp32/FiQA2018/document-50000-d8f937d190ac2eaf.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/released_ckpt_fp32/FiQA2018/document-50000-3fcf26bdb0a5e027.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/qwen3_4b_dense_prompt_both_fp32/FiQA2018/document-7638-c7a61b5e61b7924a.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/released_ckpt_fp32/FiQA2018/document-7638-6899244d71f10d26.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/qwen3_4b_dense_prompt_both_fp32/SCIDOCS/query-1000-5add3c5a51b1573d.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/released_ckpt_fp32/SCIDOCS/query-1000-811d2dc6f800485b.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/qwen3_4b_dense_prompt_both_fp32/SCIDOCS/document-25657-37d9b2c2f1286949.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/released_ckpt_fp32/SCIDOCS/document-25657-8667a98924e8abe1.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/qwen3_4b_dense_prompt_both_fp32/SciFact/query-300-4bce822b1eb0f192.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/released_ckpt_fp32/SciFact/query-300-fd7fb3c290ab62f3.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/qwen3_4b_dense_prompt_both_fp32/SciFact/document-5183-798c443a8a8531bc.npy",
+    "/scratch-shared/scur0933/csrv2/emb_cache/released_ckpt_fp32/SciFact/document-5183-077be1a607fc4422.npy"
+  ],
+  "trace": null,
+  "provenance": {
+    "timestamp_utc": "2026-11-12T19:06:55+00:00",
+    "git_commit": "04e2f3b30522ebc8e59d573c16f539238f73149b",
+    "git_dirty": true,
+    "upstream_commit": "3b2d4d27ec1f9d70af943806ece8dfd665b8d28b",
+    "slurm_job_id": "29197143",
+    "host": "gcn20.local.snellius.surf.nl",
+    "gpu": "NVIDIA A100-SXM4-40GB",
+    "python": "3.11.18",
+    "packages": {
+      "torch": "2.7.0",
+      "transformers": "4.55.0",
+      "sentence-transformers": "5.0.0",
+      "mteb": "1.38.39",
+      "peft": "0.15.2"
+    },
+    "config": {
+      "run_name": "retrieval8_duplicate_control",
+      "duplicate_control": true,
+      "corpus_seed": 42,
+      "search_phase_rounds": 20,
+      "manifest": "/scratch-shared/scur0911/csrv2/e7-inputs/retrieval8.jsonl",
+      "embedding_source": "cache",
+      "cache_root": "/scratch-shared/scur0933/csrv2",
+      "split": "test",
+      "dtype": "float32",
+      "padding_side": "left",
+      "max_seq_length": 512,
+      "prompt_mode": "both",
+      "embedding_dim": 2560,
+      "cache_corpus_chunk_size": 50000,
+      "ks": [
+        2,
+        64
+      ],
+      "query_batch_size": 512,
+      "corpus_block_size": 16384,
+      "top_n": 10,
+      "search_warmup": 30,
+      "search_rounds": 200,
+      "profile_cuda": false,
+      "dense": {
+        "model": "Qwen/Qwen3-Embedding-4B",
+        "revision": "5cf2132abc99cad020ac570b19d031efec650f2b",
+        "cache_run": "qwen3_4b_dense_prompt_both_fp32"
+      },
+      "csrv2": {
+        "model": "Y-Research-Group/CSRv2-retrieval",
+        "revision": "af16198ddd83dec2d747756a1fb592378c15c4ac",
+        "cache_run": "released_ckpt_fp32"
+      }
+    }
+  }
+}

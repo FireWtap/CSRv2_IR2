@@ -1,5 +1,5 @@
 #!/bin/bash
-# Submit from the repo root. Arguments: command config [source [cache-root]].
+# Submit from the repo root. Arguments: command config.
 #SBATCH --job-name=E7_profiling
 #SBATCH --partition=gpu_a100
 #SBATCH --gpus-per-node=1
@@ -13,16 +13,10 @@ source jobs/snellius/env.sh
 echo "commit $(git rev-parse --short HEAD) | upstream $(git -C third_party/CSRv2 rev-parse --short HEAD) | node $(hostname)"
 nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
 
-command="${1:?expected encode, search or smoke}"
+command="${1:?expected encode or search}"
 config="${2:?expected a TOML config}"
-if [[ "$command" == smoke ]]; then
-    exec uv run --frozen python scripts/smoke_e7.py "$config" "${@:3}"
+if [[ "$#" -ne 2 ]]; then
+    echo "Usage: $0 {encode|search} CONFIG" >&2
+    exit 2
 fi
-args=("$command" --config "$config")
-if [[ "$command" == search ]]; then
-    args+=(--source "${3:-cache}")
-    if [[ -n "${4:-}" ]]; then
-        args+=(--cache-root "$4")
-    fi
-fi
-uv run --frozen python -m csrv2_repro.e7_profiling "${args[@]}"
+exec uv run --frozen python -m csrv2_repro.e7_profiling "$command" --config "$config"
